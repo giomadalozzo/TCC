@@ -4,9 +4,9 @@ from PySide2 import QtCore
 import win32com.client
 import sys
 
-import ui_Tentativa1
+import GUI
 
-class MyFileBrowser(ui_Tentativa1.Ui_MainWindow, QtWidgets.QMainWindow):
+class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
     def __init__(self):
@@ -22,10 +22,10 @@ class MyFileBrowser(ui_Tentativa1.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model.setRootPath((QtCore.QDir.rootPath()))
         self.treeView.setModel(self.model)
         self.treeView.setSortingEnabled(True)
-        self.treeView.setColumnWidth(0, 400)
-        self.treeView.setColumnWidth(1, 100)
+        self.treeView.setColumnWidth(0, 260)
+        self.treeView.setColumnWidth(1, 50)
         self.treeView.setColumnWidth(2, 100)
-        self.treeView.setColumnWidth(3, 50)
+        self.treeView.setColumnWidth(3, 100)
         self.treeView.clicked.connect(self.openFile)
         
         
