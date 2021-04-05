@@ -9,6 +9,15 @@ import GUI
 class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
+    manning = False
+    flow = False
+    normalDepth = False
+    waterStage = False
+    iterManning = 0
+    iterFlow = 0
+    iterNormalDepth = 0
+    iterWaterStage = 0
+
     def __init__(self):
         super(MyFileBrowser, self).__init__()
         self.setupUi(self)
@@ -69,19 +78,20 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     def checkAnalysis(self):
         if self.checkBox.isChecked():
             print("Manning")
-            return True
-            print(self.prj_path)
-        elif self.checkBox_2.isChecked():
+            self.manning = True
+        if self.checkBox_2.isChecked():
             print("Vazão")
-            return True
-        elif self.checkBox_3.isChecked():
+            self.flow = True
+        if self.checkBox_3.isChecked():
             print("WS")
-            return True
-        elif self.checkBox_4.isChecked():
+            self.waterStage = True
+        if self.checkBox_4.isChecked():
             print("Normal depth")
+            self.normalDepth = True
+
+        if self.normalDepth or self.waterStage or self.flow or self.manning:
             return True
         else:
-            #RC = win32com.client.Dispatch("RAS507.HECRASCONTROLLER")
             self.label_5.setText("VOCÊ ESQUECEU DE MARCAR OS \nPARÂMETROS DA ANÁLISE!")
             myFont=QtGui.QFont()
             myFont.setBold(True)
@@ -89,19 +99,47 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.label_5.setStyleSheet("color: red")
             return False
 
+        
+
     def checkIterations(self):
-        if self.spinBox.value() != 0:
-            print(self.spinBox.value())
+        self.iterFlow = self.spinBox.value()
+        self.iterManning = self.spinBox_2.value()
+        self.iterNormalDepth = self.spinBox_3.value()
+        self.iterWaterStage = self.spinBox_4.value()
+
+        simulations = []
+        iters = []
+
+        if self.manning:
+            simulations.append("Manning")
+            if self.iterManning != 0:
+                print(self.spinBox.value())
+                iters.append("Manning")
+        if self.flow:
+            simulations.append("Flow")
+            if self.iterFlow != 0:
+                print(self.spinBox_2.value())
+                iters.append("Flow")
+        if self.normalDepth:
+            simulations.append("NormalDepth")
+            if self.iterNormalDepth != 0:
+                print(self.spinBox_3.value())
+                iters.append("NormalDepth")
+        if self.waterStage:
+            simulations.append("WaterStage")
+            if self.iterWaterStage != 0:
+                print(self.spinBox_4.value())
+                iters.append("WaterStage")
+        
+        if simulations == iters:
             return True
         else:
-            self.label_5.setText("VOCÊ ESQUECEU DE MARCAR O \nNÚMERO DE ITERAÇÕES!")
+            self.label_5.setText("VOCÊ ESQUECEU DE ESCOLHER O NÚMERO DE ITERAÇÕES!")
             myFont=QtGui.QFont()
             myFont.setBold(True)
             self.label_5.setFont(myFont)
             self.label_5.setStyleSheet("color: red")
             return False
-            
-
     def checkPrjFile(self):
         if self.prj_path == "":
             self.label_5.setText("VOCÊ ESQUECEU DE SELECIONAR O \nARQUIVO PRJ!")
@@ -111,7 +149,6 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.label_5.setStyleSheet("color: red")
             return False
         else:
-            print("boa prj")
             return True
             
 
@@ -121,7 +158,7 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             app.processEvents()
             self.startController()
         else:
-            print("erro no check")
+            print("erro")
         
     def inputsCorrects(self):
         self.label_5.setText("EXECUTANDO...AGUARDE!")
