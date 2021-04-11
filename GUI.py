@@ -251,7 +251,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Análise de incerteza do HEC-RAS", None))
         self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Coeficiente de Manning", None))
         self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Vaz\u00f5es de entrada", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Selecione os par\u00e2metros que deseja analisar via Monte Carlo", None))

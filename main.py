@@ -6,7 +6,13 @@ import sys
 
 import GUI
 
-class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
+class Project(object):
+    def __init__(self, nodes, reaches, river, RC):
+        self.nodes = nodes
+        self.reaches = reaches
+        self.river = river
+        self.RC = RC
+class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
     manning = False
@@ -17,15 +23,15 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     iterFlow = 0
     iterNormalDepth = 0
     iterWaterStage = 0
+    project = Project("","","","")
 
     def __init__(self):
-        super(MyFileBrowser, self).__init__()
+        super(Interface, self).__init__()
         self.setupUi(self)
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.populate()
         self.pushButton.clicked.connect(self.checks)
         
-
     def populate(self):
         self.model = QtWidgets.QFileSystemModel()
         self.model.setRootPath((QtCore.QDir.rootPath()))
@@ -37,11 +43,10 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.treeView.setColumnWidth(3, 100)
         self.treeView.clicked.connect(self.openFile)
         
-        
     def openFile(self):
-        index = self.treeView.currentIndex()
-        self.prj_path = self.model.filePath(index)
-
+        #index = self.treeView.currentIndex()
+        #self.prj_path = self.model.filePath(index)
+        self.prj_path = "F:\Hid. Computacional\ItajaiProjeto.prj"
     def checkVersion(self):
         if self.radioButton.isChecked():
             self.version = "501"
@@ -172,17 +177,90 @@ class MyFileBrowser(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         nmsg = None
         msg = None
         string = "RAS" + self.version + ".HECRASCONTROLLER"
-        RC = win32com.client.Dispatch(string)
-        RC.Project_Open(self.prj_path)
-        RC.Compute_CurrentPlan(nmsg,msg)
-        RC.Project_Close()
-        RC.QuitRas()
-    
+        self.project.RC = win32com.client.Dispatch(string)
+        self.project.RC.Project_Open(self.prj_path)
+        
+        self.gettingInfo()
+        #RC.Compute_CurrentPlan(nmsg,msg)
+        #RC.Project_Close()
+        #RC.QuitRas()
 
+    def incrementFactor(self):
+        percentageMax = 50
+        percentageMin = -50
+        discretization = 10
+        initialParam = 10
+
+        factorMax = initialParam * (1+(percentageMax/100))
+        factorMin = initialParam * (1+(percentageMin/100))
+
+        increment = (factorMax-factorMin)/(discretization-1)
+
+        listParam = []
+        for x in range(0, discretization):
+            listParam.append(factorMin+(increment*x))
+
+        #np.random.uniforme(min,max)
+        
+        listParam.append(initialParam)
+        listParam.sort()
+        print(listParam)
+
+    def gettingInfo(self):
+        #saída -> num de rios (int), nome dos rios do modelo (string)
+        aux = self.project.RC.Geometry_GetRivers()[1]
+        if aux != None:
+            aux = list(aux)
+        river = aux
+
+        #print("Rios:")
+        #print(river)
+
+        reach = []
+        for x in range(0,len(river)):
+            #entrada -> river ID para achar os trechos(int)
+            #saída -> num de trechos do rio (int), nome dos trechos do rio (string)
+            aux = self.project.RC.Geometry_GetReaches(x+1)[2]
+            if aux != None:
+                aux = list(aux)
+            reach.append(aux)
+
+        #print("Reaches:")
+        #print(reach)
+
+        #entrada -> river ID (int) e reach ID (int) para achar os nodes
+        #saída -> num de nós (int), nome dos nós do trecho (string), tipo do nó (int) - caso tenha ponte e estruturas são considerados nós com um código
+        nodes = []
+        
+        for x in range(0,len(river)):
+            nodes_aux = []
+            for y in range(0, len(reach[x])):
+                aux = self.project.RC.Geometry_GetNodes(x+1,y+1)[3]
+                if aux != None:
+                    aux = list(aux)
+                nodes_aux.append(aux)
+            nodes.append(nodes_aux)
+
+        #print("Nodes:")
+        print(nodes)
+
+        self.project.nodes = nodes
+        self.project.reaches = reach
+        self.project.river = river
+
+    def extractResults(self, RC, nodes, reach, river):
+        #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
+        #saída -> resultado para dada seção
+        RC.Output_NodeOutput()
+
+    def changeMannings(self, RC, nodes, reach, river):
+        #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
+        #botar None para não mudar o manning (testar)
+        RC.Geometry_SetMann_LChR()
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    fb = MyFileBrowser()
+    fb = Interface()
     fb.show()
     app.exec_()
