@@ -7,10 +7,10 @@ import sys
 import GUI
 
 class Project(object):
-    def __init__(self, nodes, reaches, river, RC):
+    def __init__(self, nodes, reaches, rivers, RC):
         self.nodes = nodes
         self.reaches = reaches
-        self.river = river
+        self.rivers = rivers
         self.RC = RC
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
@@ -174,16 +174,21 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.label_5.show()
 
     def startController(self):
-        nmsg = None
-        msg = None
         string = "RAS" + self.version + ".HECRASCONTROLLER"
         self.project.RC = win32com.client.Dispatch(string)
+        self.project.RC.ShowRAS()
         self.project.RC.Project_Open(self.prj_path)
         
         self.gettingInfo()
-        #RC.Compute_CurrentPlan(nmsg,msg)
-        #RC.Project_Close()
-        #RC.QuitRas()
+        self.changeMannings()
+
+        Simulation = self.project.RC.Compute_CurrentPlan(None,None,True)
+
+
+        print("rodando")
+        #self.project.RC.Project_Close()
+        #self.project.RC.QuitRas()
+        print("quitou")
 
     def incrementFactor(self):
         percentageMax = 50
@@ -213,8 +218,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             aux = list(aux)
         river = aux
 
-        #print("Rios:")
-        #print(river)
+        print("Rios:")
+        print(river)
 
         reach = []
         for x in range(0,len(river)):
@@ -225,8 +230,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 aux = list(aux)
             reach.append(aux)
 
-        #print("Reaches:")
-        #print(reach)
+        print("Reaches:")
+        print(reach)
 
         #entrada -> river ID (int) e reach ID (int) para achar os nodes
         #saída -> num de nós (int), nome dos nós do trecho (string), tipo do nó (int) - caso tenha ponte e estruturas são considerados nós com um código
@@ -238,25 +243,33 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 aux = self.project.RC.Geometry_GetNodes(x+1,y+1)[3]
                 if aux != None:
                     aux = list(aux)
-                nodes_aux.append(aux)
+                    nodes_aux.append(aux)
+                else:
+                    aux2 = []
+                    aux2.append(aux)
+                    nodes_aux.append(aux2)
             nodes.append(nodes_aux)
 
-        #print("Nodes:")
+        print("Nodes:")
         print(nodes)
 
         self.project.nodes = nodes
         self.project.reaches = reach
-        self.project.river = river
+        self.project.rivers = river
 
-    def extractResults(self, RC, nodes, reach, river):
+    def extractResults(self):
         #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
         #saída -> resultado para dada seção
         RC.Output_NodeOutput()
 
-    def changeMannings(self, RC, nodes, reach, river):
+    def changeMannings(self):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
         #botar None para não mudar o manning (testar)
-        RC.Geometry_SetMann_LChR()
+        for x in range(0,len(self.project.rivers)):
+            for y in range(0,len(self.project.reaches[x])):
+                for z in range(0, len(self.project.nodes[x][y])):
+                    self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x], self.project.reaches[x][y], self.project.nodes[x][y][z], None, 0.02112, None)
+                    print("River {} Reach {} Node {}".format(self.project.rivers[x], self.project.reaches[x][y], self.project.nodes[x][y][z]))
 
 
 if __name__ == "__main__":
