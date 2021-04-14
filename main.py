@@ -3,11 +3,12 @@ from PySide2 import QtGui
 from PySide2 import QtCore
 import win32com.client
 import sys
+import os
 
 import GUI
 
 class Project(object):
-    def __init__(self, nodes, reaches, rivers, leftMannings, centralMannings, rightMannings, RC, planFile, geometryFile):
+    def __init__(self, nodes, reaches, rivers, leftMannings, channelMannings, rightMannings, RC, planFile, geometryFile):
         self.nodes = nodes
         self.reaches = reaches
         self.rivers = rivers
@@ -28,6 +29,10 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     iterFlow = 0
     iterNormalDepth = 0
     iterWaterStage = 0
+    limitsManning = [0,0]
+    limitsFlow = [0,0]
+    limitsNormalDepth = [0,0]
+    limitsWaterStage = [0,0]
     project = Project("","","","","","","","","")
 
     def __init__(self):
@@ -52,6 +57,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #index = self.treeView.currentIndex()
         #self.prj_path = self.model.filePath(index)
         self.prj_path = "F:\Hid. Computacional\ItajaiProjeto.prj"
+
     def checkVersion(self):
         if self.radioButton.isChecked():
             self.version = "501"
@@ -109,8 +115,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.label_5.setStyleSheet("color: red")
             return False
 
-        
-
     def checkIterations(self):
         self.iterFlow = self.spinBox.value()
         self.iterManning = self.spinBox_2.value()
@@ -150,6 +154,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.label_5.setFont(myFont)
             self.label_5.setStyleSheet("color: red")
             return False
+
     def checkPrjFile(self):
         if self.prj_path == "":
             self.label_5.setText("VOCÊ ESQUECEU DE SELECIONAR O \nARQUIVO PRJ!")
@@ -161,9 +166,54 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         else:
             return True
             
+    def checkLimits(self):
+        if self.manning:
+            if self.spinBox_8.value() == 0 or self.spinBox_7.value() == 0:
+                self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
+                myFont=QtGui.QFont()
+                myFont.setBold(True)
+                self.label_5.setFont(myFont)
+                self.label_5.setStyleSheet("color: red")
+                return False
+            else:
+                self.limitsManning = [self.spinBox_8.value(),self.spinBox_7.value()]
+                return True
+        if self.flow:
+            if self.spinBox_5.value() == 0 or self.spinBox_6.value() == 0:
+                self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
+                myFont=QtGui.QFont()
+                myFont.setBold(True)
+                self.label_5.setFont(myFont)
+                self.label_5.setStyleSheet("color: red")
+                return False
+            else:
+                self.limitsFlow = [self.spinBox_5.value(),self.spinBox_6.value()]
+                return True
+        if self.normalDepth:
+            if self.spinBox_10.value() == 0 or self.spinBox_9.value() == 0:
+                self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
+                myFont=QtGui.QFont()
+                myFont.setBold(True)
+                self.label_5.setFont(myFont)
+                self.label_5.setStyleSheet("color: red")
+                return False
+            else:
+                self.normalDepth = [self.spinBox_10.value(),self.spinBox_9.value()]
+                return True
+        if self.waterStage:
+            if self.spinBox_12.value() == 0 or self.spinBox_11.value() == 0:
+                self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
+                myFont=QtGui.QFont()
+                myFont.setBold(True)
+                self.label_5.setFont(myFont)
+                self.label_5.setStyleSheet("color: red")
+                return False
+            else:
+                self.waterStage = [self.spinBox_12.value(),self.spinBox_11.value()]
+                return True
 
     def checks(self):
-        if self.checkPrjFile() and self.checkAnalysis() and self.checkVersion() and self.checkIterations():
+        if self.checkPrjFile() and self.checkAnalysis() and self.checkVersion() and self.checkIterations() and self.checkLimits():
             self.inputsCorrects()
             app.processEvents()
             self.startController()
@@ -183,9 +233,10 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.RC = win32com.client.Dispatch(string)
         self.project.RC.ShowRAS()
         self.project.RC.Project_Open(self.prj_path)
-        self.getMannings()
-        #self.changeMannings()
-        
+        self.getFiles()
+
+        if self.manning:
+            self.monteCarloManning()
 
         Simulation = self.project.RC.Compute_CurrentPlan(None,None,True)
 
@@ -195,24 +246,32 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #self.project.RC.QuitRas()
         print("quitou")
 
-    def incrementFactor(self):
-        percentageMax = 50
-        percentageMin = -50
+    def monteCarloManning(self):
+        self.getMannings()
+        manningsModified = self.incrementFactorMultiply(self.limitsManning[1],self.limitsManning[0], self.project.channelMannings)
+        self.changeMannings()
+
+    def incrementFactorMultiply(self, percentageMax, percentageMin, parameters):
+        parametersModified = []
         discretization = 10
-        initialParam = 10
+        listParam2 = []
+        for x in range(0, len(parameters)):
+            listParam = []
+            for y in range(0, len(parameters[x])):
+                factorMax = float(parameters[x][y]) * (1+(percentageMax/100))
+                factorMin = float(parameters[x][y]) * (1+(-percentageMin/100))
 
-        factorMax = initialParam * (1+(percentageMax/100))
-        factorMin = initialParam * (1+(percentageMin/100))
-
-        increment = (factorMax-factorMin)/(discretization-1)
-
-        listParam = []
-        for x in range(0, discretization):
-            listParam.append(factorMin+(increment*x))
-        
-        listParam.append(initialParam)
-        listParam.sort()
-        print(listParam)
+                increment = (factorMax-factorMin)/(discretization-1)
+                for z in range(0, discretization):
+                    listParam2.append(factorMin+(increment*z))
+                listParam2.append(float(parameters[x][y]))
+                listParam2.sort()
+                listParam.append(listParam2)
+                listParam2 = []
+            parametersModified.append(listParam)
+        #print("Modified")
+        #print(parametersModified)
+        return parametersModified
 
     def extractResults(self):
         #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
@@ -222,27 +281,32 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     def changeMannings(self):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
         for x in range(0,len(self.project.rivers)):
-            for y in range(0,len(self.project.reaches[x])):
-                for z in range(0, len(self.project.nodes[x][y])):
-                    self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x], self.project.reaches[x][y], self.project.nodes[x][y][z], modificado, modificado, modificado)
-                    print("River {} Reach {} Node {}".format(self.project.rivers[x], self.project.reaches[x][y], self.project.nodes[x][y][z]))
+            for y in range(0, len(self.project.nodes[x])):
+                self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.channelMannings[x][y], self.project.rightMannings[x][y])
+                print("River {} Reach {} Node {} L {} C {} R {}".format(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.channelMannings[x][y], self.project.rightMannings[x][y]))
 
     def getFiles(self):
         filename = self.project.RC.CurrentPlanFile()
-
+        geometryFile = ""
+        planFile = ""
         with open(filename, 'r') as file:
             lines = file.readlines()
             for line in lines:
                 if "Geom File=" in line:
-                    geometryFile = line.split("=")[1]
+                    geometryFile = line.split("=")[1].replace("\n", "")
                 if "Flow File=" in line:
-                    planFile = line.split("=")[1]
+                    planFile = line.split("=")[1].replace("\n", "")
                 if geometryFile != "" and planFile != "":
                     break
-        
-        
 
+        path = self.prj_path.replace(self.prj_path.split("\\")[-1], "")
 
+        for file in os.listdir(path):
+            if file.endswith(planFile):
+                self.project.planFile = os.path.join(path, file)
+            elif file.endswith(geometryFile):
+                self.project.geometryFile = os.path.join(path, file)
+        
     def getMannings(self):
         nodes = []
         leftMannings = []
@@ -258,7 +322,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         river_aux = []
         reach_aux = []
 
-        with open('./Arquivos HECRAS/ItajaiProjeto.g10','r') as file:
+        with open(self.project.geometryFile,'r') as file:
             lines = file.readlines()
             for i in range(0, len(lines)):
                 line = lines[i]
@@ -298,12 +362,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 channelMannings.append(channelMannings_aux)
                 rightMannings.append(rightMannings_aux)
 
-        self.rivers = river
-        self.reaches = reach
-        self.nodes = nodes
-        self.leftMannings = leftMannings
-        self.channelMannings = channelMannings
-        self.rightMannings = rightMannings
+        self.project.rivers = river
+        self.project.reaches = reach
+        self.project.nodes = nodes
+        self.project.leftMannings = leftMannings
+        self.project.channelMannings = channelMannings
+        self.project.rightMannings = rightMannings
         #print("river")
         #print(river)
         #print("reach")
@@ -312,8 +376,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #print(nodes)
         #print("left manning")
         #print(leftMannings)
-        #print("channel manning")
-        #print(channelMannings)
+        print("channel manning")
+        print(channelMannings)
         #print("right manning")
         #print(rightMannings)       
 
