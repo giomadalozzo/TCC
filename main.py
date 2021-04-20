@@ -18,6 +18,8 @@ class Project(object):
         self.planFile = planFile
         self.geometryFile = geometryFile
         self.RC = RC
+        self.manningsModified = []
+
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
@@ -238,8 +240,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         if self.manning:
             self.monteCarloManning()
 
-        Simulation = self.project.RC.Compute_CurrentPlan(None,None,True)
-
 
         print("rodando")
         #self.project.RC.Project_Close()
@@ -248,12 +248,14 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def monteCarloManning(self):
         self.getMannings()
-        manningsModified = self.incrementFactorMultiply(self.limitsManning[1],self.limitsManning[0], self.project.channelMannings)
-        self.changeMannings()
+        self.project.manningsModified = self.incrementFactorMultiply(self.limitsManning[1],self.limitsManning[0], self.project.channelMannings, self.iterManning)
+        for z in range (0, self.iterManning+1):
+            self.changeMannings(z)
+            Simulation = self.project.RC.Compute_CurrentPlan(None,None,True)
 
-    def incrementFactorMultiply(self, percentageMax, percentageMin, parameters):
+
+    def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
         parametersModified = []
-        discretization = 10
         listParam2 = []
         for x in range(0, len(parameters)):
             listParam = []
@@ -269,8 +271,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 listParam.append(listParam2)
                 listParam2 = []
             parametersModified.append(listParam)
-        #print("Modified")
-        #print(parametersModified)
+        print("Modified")
+        print(parametersModified)
         return parametersModified
 
     def extractResults(self):
@@ -278,12 +280,14 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #saída -> resultado para dada seção
         RC.Output_NodeOutput()
 
-    def changeMannings(self):
+    def changeMannings(self, z):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
+        
         for x in range(0,len(self.project.rivers)):
             for y in range(0, len(self.project.nodes[x])):
-                self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.channelMannings[x][y], self.project.rightMannings[x][y])
-                print("River {} Reach {} Node {} L {} C {} R {}".format(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.channelMannings[x][y], self.project.rightMannings[x][y]))
+                self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.manningsModified[x][y][z], self.project.rightMannings[x][y])
+        print("River {} Reach {} Node {} L {} C {} R {}".format(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.manningsModified[x][y][z], self.project.rightMannings[x][y]))
+                   
 
     def getFiles(self):
         filename = self.project.RC.CurrentPlanFile()
@@ -368,18 +372,18 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.leftMannings = leftMannings
         self.project.channelMannings = channelMannings
         self.project.rightMannings = rightMannings
-        #print("river")
-        #print(river)
-        #print("reach")
-        #print(reach)
-        #print("Nodes")
-        #print(nodes)
-        #print("left manning")
-        #print(leftMannings)
+        print("river")
+        print(river)
+        print("reach")
+        print(reach)
+        print("Nodes")
+        print(nodes)
+        print("left manning")
+        print(leftMannings)
         print("channel manning")
         print(channelMannings)
-        #print("right manning")
-        #print(rightMannings)       
+        print("right manning")
+        print(rightMannings)       
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
