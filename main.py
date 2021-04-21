@@ -4,6 +4,8 @@ from PySide2 import QtCore
 import win32com.client
 import sys
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
 
 import GUI
 
@@ -19,6 +21,9 @@ class Project(object):
         self.geometryFile = geometryFile
         self.RC = RC
         self.manningsModified = []
+        self.resultsFlowManning = []
+        self.resultsWSManning = []
+        self.resultsVManning = []
 
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
@@ -251,8 +256,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.manningsModified = self.incrementFactorMultiply(self.limitsManning[1],self.limitsManning[0], self.project.channelMannings, self.iterManning)
         for z in range (0, self.iterManning+1):
             self.changeMannings(z)
-            Simulation = self.project.RC.Compute_CurrentPlan(None,None,True)
-
+            self.project.RC.Compute_CurrentPlan(None,None,True)
+            self.extractResults()
 
     def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
         parametersModified = []
@@ -278,7 +283,34 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     def extractResults(self):
         #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
         #saída -> resultado para dada seção
-        RC.Output_NodeOutput()
+        resultsWS = []
+        resultsV = []
+        resultsFlow = []
+        riverIteration = []
+        reachIteration = []
+        for x in range(0,len(self.project.rivers)):
+            for y in range(0, len(self.project.nodes[x])):
+                resultsWS.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 2)[0])
+                resultsV.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 23)[0])
+                resultsFlow.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 9)[0])
+                riverIteration.append(self.project.rivers[x][0])
+                reachIteration.append(self.project.reaches[x][0])
+
+            output = {'Cross Sections': self.project.nodes[x],'River': riverIteration,'Reach': reachIteration,'WSE(m)':resultsWS, 'Flow(m3/s)':resultsFlow, 'V (m/s)':resultsV}
+            df_output = pd.DataFrame(output)
+            df_output.set_index('Cross Sections')
+
+            df_output.plot(x = 'Cross Sections', y = 'Flow(m3/s)', kind = 'scatter')
+            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+            plt.show()
+
+            df_output.plot(x = 'Cross Sections', y = 'WSE(m)', kind = 'scatter')
+            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+            plt.show()
+
+            df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
+            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+            plt.show()
 
     def changeMannings(self, z):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
