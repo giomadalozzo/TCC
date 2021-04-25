@@ -6,6 +6,7 @@ import sys
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from shutil import copyfile
 
 import GUI
 
@@ -24,6 +25,8 @@ class Project(object):
         self.resultsFlowManning = []
         self.resultsWSManning = []
         self.resultsVManning = []
+        self.inputFlows = []
+        self.modifiedFlows = []
 
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
@@ -63,7 +66,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     def openFile(self):
         #index = self.treeView.currentIndex()
         #self.prj_path = self.model.filePath(index)
-        self.prj_path = "F:\Hid. Computacional\ItajaiProjeto.prj"
+        self.prj_path = "C:\\Users\\Giovanni\\Desktop\\Projetos GitHub\\TCC\\Arquivos HECRAS\\ItajaiProjeto.prj"
 
     def checkVersion(self):
         if self.radioButton.isChecked():
@@ -237,16 +240,21 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def startController(self):
         string = "RAS" + self.version + ".HECRASCONTROLLER"
+        print(self.prj_path)
         self.project.RC = win32com.client.Dispatch(string)
         self.project.RC.ShowRAS()
         self.project.RC.Project_Open(self.prj_path)
         self.getFiles()
+        self.createBackup()
+        self.project.RC.Project_Open(self.prj_path)
+        print("Running")
 
         if self.manning:
             self.monteCarloManning()
 
+        if self.flow:
+            self.monteCarloFlow()
 
-        print("rodando")
         #self.project.RC.Project_Close()
         #self.project.RC.QuitRas()
         print("quitou")
@@ -258,6 +266,17 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.changeMannings(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             self.extractResults()
+
+    def monteCarloFlow(self):
+        self.getFlows()
+        self.project.modifiedFlows = self.incrementFactorMultiply(self.limitsFlow[1],self.limitsFlow[0], self.project.inputFlows, self.iterFlow)
+        for z in range (0, self.iterFlow+1):
+            self.changeFlows(z)
+            self.project.RC.Project_Close()
+            self.project.RC.Project_Open(self.prj_path)
+            self.project.RC.Compute_CurrentPlan(None,None,True)
+            self.extractResults()
+
 
     def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
         parametersModified = []
@@ -311,6 +330,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
             plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
             plt.show()
+            print("finalizou")
 
     def changeMannings(self, z):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
@@ -404,18 +424,127 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.leftMannings = leftMannings
         self.project.channelMannings = channelMannings
         self.project.rightMannings = rightMannings
-        print("river")
-        print(river)
-        print("reach")
-        print(reach)
-        print("Nodes")
-        print(nodes)
-        print("left manning")
-        print(leftMannings)
-        print("channel manning")
-        print(channelMannings)
-        print("right manning")
-        print(rightMannings)       
+        #print("river")
+        #print(river)
+        #print("reach")
+        #print(reach)
+        #print("Nodes")
+        #print(nodes)
+        #print("left manning")
+        #print(leftMannings)
+        #print("channel manning")
+        #print(channelMannings)
+        #print("right manning")
+        #print(rightMannings)
+#
+    def getFlows(self):
+        nodes = []
+        river = []
+        reach = []
+
+        nodes_aux = []
+        river_aux = []
+        reach_aux = []
+
+        with open(self.project.geometryFile,'r') as file:
+            lines = file.readlines()
+            for i in range(0, len(lines)):
+                line = lines[i]
+                if "River Reach=" in line and len(river_aux)>0:
+                    reach.append(reach_aux)
+                    river.append(river_aux)
+                    nodes.append(nodes_aux)
+
+                    nodes_aux = []
+                    river_aux = []
+                    reach_aux = []
+                if "River Reach=" in line:
+                    if "CM River Reach=" not in line:
+                        reach_aux.append(line.split(",")[1].replace("\n",""))
+                        river_aux.append(line.split(",")[0].split("=")[1])
+                elif "Type RM Length L Ch R" in line:
+                    nodes_aux.append(line.split("=")[1].split(",")[1])
+
+            if reach_aux != []:
+                reach.append(reach_aux)
+                river.append(river_aux)
+                nodes.append(nodes_aux)
+
+        self.project.rivers = river
+        self.project.reaches = reach
+        self.project.nodes = nodes
+        start = False
+        isInputFlow = True
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if "Flow Hydrograph=" in line:
+                    start = True
+                if "DSS Path=" in line:
+                    start = False
+                    isInputFlow = False
+                if start and "Flow Hydrograph=" not in line and isInputFlow:
+                    listFlowLine = line.split(" ")
+                    for x in range(0,len(listFlowLine)):
+                        if "\n" in listFlowLine[x]:
+                            listFlowLine[x] = listFlowLine[x].replace("\n","")
+                    filter_object = filter(lambda x: x != "", listFlowLine)
+                    listFlowLine = list(filter_object)
+                    self.project.inputFlows.append(listFlowLine)
+                    listFlowLine = []
+
+        print(self.project.inputFlows)
+
+    def changeFlows(self, z):
+        newFlows = []
+        for x in range(0, len(self.project.modifiedFlows)):
+            flowsString = ""
+            for y in range (0,len(self.project.modifiedFlows[x])):
+                flow = str(self.project.modifiedFlows[x][y][z])
+                if len(flow)<7:
+                    for i in range(0, 7-len(flow)):
+                        flow+="0"
+                if len(flow)>7:
+                    value = flow.split(".")[0]
+                    gap =  7-len(value)
+                    flow = round(float(flow),gap-1)
+                    flow = str(flow)
+                    while len(flow) < 7:
+                        flow += "0"
+                
+                flowsString += " "+flow
+            newFlows.append(flowsString+"\n")
+
+        print(newFlows)
+
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            start = False
+            x=0
+            for line in lines:
+                if "Flow Hydrograph=" in line:
+                    start = True
+                if "DSS Path=" in line:
+                    start = False
+                if start and "Flow Hydrograph=" not in line:
+                    lines = [newFlows[x] if string==line else string for string in lines]
+                    x+=1
+        
+        with open(self.project.planFile,'w') as file:
+            file.writelines(lines)
+
+    def createBackup(self):
+        self.project.RC.Project_Close()
+
+        actualPath = os.path.dirname(os.path.abspath(__file__))
+        directory = "Backup Files"
+        pathBackup = os.path.join(actualPath, directory)
+        if os.path.isdir(pathBackup) is False:
+            os.mkdir(pathBackup)
+        planDestination = os.path.join(pathBackup,self.project.planFile.split('\\')[-1])
+        geomDestination = os.path.join(pathBackup,self.project.geometryFile.split('\\')[-1])
+        copyfile(self.project.planFile, planDestination)
+        copyfile(self.project.geometryFile, geomDestination)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
