@@ -1,118 +1,22 @@
 Message  | Plan: 'Plan_1983' (ItajaiProjeto.p04)
-Message  | Simulation started at: 25Apr2021 03:12:50 AM
+Message  | Simulation started at: 26Apr2021 03:31:20 AM
 Message  | PROCESS:RasGeomWriter
 Message  | 
 Message  | Writing Geometry
 Progress | 1
 Message  | Completed Writing Geometry
 Message  | PROCESS:RASGeomPreprocess
-Message  | 	
-Message  | Geometric Preprocessor HEC-RAS 5.0.7 March 2019
-Progress | 0.2
-Progress | 0.3
-Progress | 3.968254E-03
-Progress | 2.777778E-02
-Progress | 0.0515873
-Progress | 7.539683E-02
-Progress | 9.920635E-02
-Progress | 0.1230159
-Progress | 0.1468254
-Progress | 0.1706349
-Progress | 0.1944444
-Progress | 0.218254
-Progress | 0.2420635
-Progress | 0.265873
-Progress | 0.2896825
-Progress | 0.3134921
-Progress | 0.3373016
-Progress | 0.3611111
-Progress | 0.3849206
-Progress | 0.4087301
-Progress | 0.4325397
-Progress | 0.4563492
-Progress | 0.4801587
-Progress | 0.5039682
-Progress | 0.5277778
-Progress | 0.5515873
-Progress | 0.5753968
-Progress | 0.5992063
-Progress | 0.6230159
-Progress | 0.6468254
-Progress | 0.6706349
-Progress | 0.6944444
-Progress | 0.718254
-Progress | 0.7420635
-Progress | 0.765873
-Progress | 0.7896826
-Progress | 0.8134921
-Progress | 0.8373016
-Progress | 0.8611111
-Progress | 0.8849207
-Progress | 0.9087301
-Progress | 0.9325397
-Progress | 0.9563492
-Progress | 0.9801587
-Progress | 1
+Message  | Process: RasGeomPreprocess64 killed.
 Message  | 
-Message  | Finished Processing Geometry
+Message  | Note - Computations stopped by the user !!!
 Message  | 
-Message  | Starting to copy Geometry Data to Results
-Message  | Completed copying Geometry Data to Results
 Message  | 
-Message  | PROCESS:RasUnsteady
+Message  | Error with program: RASGeomPreprocess64.exe Exit Code = -1
 Message  | 
-Message  | Performing Unsteady Flow Simulation  HEC-RAS 5.0.7 March 2019
 Message  | 
-Progress | 0.1
-Progress | 0.2
-Progress | 0.3
-Progress | 0.3201757
-Progress | 0.3403514
-Progress | 0.3605271
-Progress | 0.3807028
-Progress | 0.4008785
-Progress | 0.4210542
-Progress | 0.4412299
-Progress | 0.4614056
-Progress | 0.4815813
-Progress | 0.5017571
-Progress | 0.5219328
-Progress | 0.5421085
-Progress | 0.5622842
-Progress | 0.5824599
-Message  | Maximum adaptive timestep = 01:00:00    Minimum adaptive timestep = 00:01.758
-Message  | Initial adaptive timestep = 00:56.25
+Message  | Computations Summary
 Message  | 
-Progress | 0.6111112
-Progress | 0.6333334
-Progress | 0.6555556
-Progress | 0.6777778
-Progress | 0.7
-Progress | 0.7222223
-Progress | 0.7444445
-Progress | 0.7666667
-Progress | 0.7888889
-Progress | 0.8111112
-Progress | 0.8333334
-Progress | 0.8555556
-Progress | 0.8777778
-Progress | 0.9
-Progress | 0.9222223
-Progress | 0.9444445
-Progress | 0.9666667
-Progress | 0.9888889
-Progress | 6.576178E-06
-Progress | 2.001131E-02
-Message  | 01MAY1983 20:58:07       timestep =            28.125      (sec)
-Progress | 4.001605E-02
-Progress | 6.002078E-02
-Progress | 8.002552E-02
-Progress | 0.1000303
-Progress | 0.120035
-Progress | 0.1400397
-Progress | 0.1600445
-Progress | 0.1800492
-Progress | 0.2000539
-Progress | 0.2200587
-Message  | 20MAY1983 10:11:43       timestep =            14.063      (sec)
-Message  | Process already exited
+Message  | Computation Task	Time(hh:mm:ss)
+Message  | Completing Geometry(64)	<1
+Message  | Preprocessing Geometry(64)	<1
+Message  | Complete Process	       1

@@ -27,6 +27,8 @@ class Project(object):
         self.resultsVManning = []
         self.inputFlows = []
         self.modifiedFlows = []
+        self.inputNormalDepth = []
+        self.modifiedNormalDepth = []
 
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
@@ -208,7 +210,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.label_5.setStyleSheet("color: red")
                 return False
             else:
-                self.normalDepth = [self.spinBox_10.value(),self.spinBox_9.value()]
+                self.limitsNormalDepth = [self.spinBox_10.value(),self.spinBox_9.value()]
                 return True
         if self.waterStage:
             if self.spinBox_12.value() == 0 or self.spinBox_11.value() == 0:
@@ -219,7 +221,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.label_5.setStyleSheet("color: red")
                 return False
             else:
-                self.waterStage = [self.spinBox_12.value(),self.spinBox_11.value()]
+                self.limitsWaterStage = [self.spinBox_12.value(),self.spinBox_11.value()]
                 return True
 
     def checks(self):
@@ -255,6 +257,9 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         if self.flow:
             self.monteCarloFlow()
 
+        if self.normalDepth:
+            self.monteCarloNormalDepth()
+
         #self.project.RC.Project_Close()
         #self.project.RC.QuitRas()
         print("quitou")
@@ -277,6 +282,19 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.project.RC.Compute_CurrentPlan(None,None,True)
             self.extractResults()
 
+    def monteCarloNormalDepth(self):
+        self.getNormalDepth()
+        print(self.limitsNormalDepth[1])
+        print(self.limitsNormalDepth[0])
+        print(self.iterNormalDepth)
+        self.project.modifiedNormalDepth = self.incrementFactorMultiply(self.limitsNormalDepth[1],self.limitsNormalDepth[0], self.project.inputNormalDepth, self.iterNormalDepth)
+        print(self.project.modifiedNormalDepth)
+        for z in range (0, self.iterNormalDepth+1):
+            self.changeNormalDepth(z)
+            self.project.RC.Project_Close()
+            self.project.RC.Project_Open(self.prj_path)
+            self.project.RC.Compute_CurrentPlan(None,None,True)
+            self.extractResults()
 
     def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
         parametersModified = []
@@ -286,7 +304,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             for y in range(0, len(parameters[x])):
                 factorMax = float(parameters[x][y]) * (1+(percentageMax/100))
                 factorMin = float(parameters[x][y]) * (1+(-percentageMin/100))
-
+                print(percentageMax)
+                print(percentageMin)
                 increment = (factorMax-factorMin)/(discretization-1)
                 for z in range(0, discretization):
                     listParam2.append(factorMin+(increment*z))
@@ -295,8 +314,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 listParam.append(listParam2)
                 listParam2 = []
             parametersModified.append(listParam)
-        print("Modified")
-        print(parametersModified)
+        #print("Modified")
+        #print(parametersModified)
         return parametersModified
 
     def extractResults(self):
@@ -340,6 +359,22 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.project.RC.Geometry_SetMann_LChR(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.manningsModified[x][y][z], self.project.rightMannings[x][y])
         print("River {} Reach {} Node {} L {} C {} R {}".format(self.project.rivers[x][0], self.project.reaches[x][0], self.project.nodes[x][y], self.project.leftMannings[x][y], self.project.manningsModified[x][y][z], self.project.rightMannings[x][y]))
                    
+    def changeNormalDepth(self, z):
+        for x in range(0, len(self.project.modifiedNormalDepth)):
+            for y in range(0, len(self.project.modifiedNormalDepth[x])):
+                newValue = self.project.modifiedNormalDepth[x][y][z]
+
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if "Friction Slope=" in line:
+                    part1= line.split("=")[0]
+                    part2= line.split("=")[1].split(",")[1]
+                    newLine = part1+"="+str(newValue)+","+part2
+                    lines = [newLine if string==line else string for string in lines]
+        
+        with open(self.project.planFile,'w') as file:
+            file.writelines(lines)
 
     def getFiles(self):
         filename = self.project.RC.CurrentPlanFile()
@@ -436,7 +471,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #print(channelMannings)
         #print("right manning")
         #print(rightMannings)
-#
+
     def getFlows(self):
         nodes = []
         river = []
@@ -495,6 +530,54 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
         print(self.project.inputFlows)
 
+    def getNormalDepth(self):
+        nodes = []
+        river = []
+        reach = []
+
+        nodes_aux = []
+        river_aux = []
+        reach_aux = []
+
+        with open(self.project.geometryFile,'r') as file:
+            lines = file.readlines()
+            for i in range(0, len(lines)):
+                line = lines[i]
+                if "River Reach=" in line and len(river_aux)>0:
+                    reach.append(reach_aux)
+                    river.append(river_aux)
+                    nodes.append(nodes_aux)
+
+                    nodes_aux = []
+                    river_aux = []
+                    reach_aux = []
+                if "River Reach=" in line:
+                    if "CM River Reach=" not in line:
+                        reach_aux.append(line.split(",")[1].replace("\n",""))
+                        river_aux.append(line.split(",")[0].split("=")[1])
+                elif "Type RM Length L Ch R" in line:
+                    nodes_aux.append(line.split("=")[1].split(",")[1])
+
+            if reach_aux != []:
+                reach.append(reach_aux)
+                river.append(river_aux)
+                nodes.append(nodes_aux)
+
+        self.project.rivers = river
+        self.project.reaches = reach
+        self.project.nodes = nodes
+
+        listNormalDepth = []
+        print(self.project.planFile)
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if "Friction Slope=" in line:
+                    listNormalDepth.append(float(line.split("=")[1].split(",")[0]))
+                    self.project.inputNormalDepth.append(listNormalDepth)
+                    break
+        
+        print(self.project.inputNormalDepth)
     def changeFlows(self, z):
         newFlows = []
         for x in range(0, len(self.project.modifiedFlows)):
