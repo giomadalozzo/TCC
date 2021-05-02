@@ -31,6 +31,11 @@ class Project(object):
         self.modifiedNormalDepth = []
         self.inputStages = []
         self.modifiedStages = []
+
+        self.dfResultsManning = []
+        self.dfResultsFlows = []
+        self.dfResultsNormalDepth = []
+        self.dfResultsStages = []
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
@@ -264,9 +269,17 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         if self.waterStage:
             self.monteCarloStage()
 
-        #self.project.RC.Project_Close()
-        #self.project.RC.QuitRas()
+        self.project.RC.Project_Close()
+        self.project.RC.QuitRas()
         print("quitou")
+
+        self.label_5.setText("PROCESSO FINALIZADO!")
+        myFont=QtGui.QFont('Times', 20)
+        myFont.setBold(True)
+        self.label_5.setFont(myFont)
+        self.label_5.setStyleSheet("color: green")
+        self.label_5.show()
+
 
     def monteCarloStage(self):
         self.getStages()
@@ -275,9 +288,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         for z in range (0, iterations):
             self.changeStages(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            self.extractResults()
+            df = self.extractResults()
+            self.project.dfResultsStages.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
+        print(self.project.dfResultsStages)
+        print(len(self.project.dfResultsStages))
         self.project.RC.Project_Open(self.prj_path)
 
 
@@ -287,7 +303,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         for z in range (0, self.iterManning+1):
             self.changeMannings(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            self.extractResults()
+            df = self.extractResults()
+            self.project.dfResultsManning.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
         self.project.RC.Project_Open(self.prj_path)
@@ -300,7 +317,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            self.extractResults()
+            df = self.extractResults()
+            self.project.dfResultsFlow.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
         self.project.RC.Project_Open(self.prj_path)
@@ -313,7 +331,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            self.extractResults()
+            df = self.extractResults()
+            self.project.dfResultsNormalDepth.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
         self.project.RC.Project_Open(self.prj_path)
@@ -427,22 +446,24 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 riverIteration.append(self.project.rivers[x][0])
                 reachIteration.append(self.project.reaches[x][0])
 
-            output = {'Cross Sections': self.project.nodes[x],'River': riverIteration,'Reach': reachIteration,'WSE(m)':resultsWS, 'Flow(m3/s)':resultsFlow, 'V (m/s)':resultsV}
-            df_output = pd.DataFrame(output)
-            df_output.set_index('Cross Sections')
+        output = {'Cross Sections': self.project.nodes[x],'River': riverIteration,'Reach': reachIteration,'WSE(m)':resultsWS, 'Flow(m3/s)':resultsFlow, 'V (m/s)':resultsV}
+        df_output = pd.DataFrame(output)
+        df_output.set_index('Cross Sections')
 
-            df_output.plot(x = 'Cross Sections', y = 'Flow(m3/s)', kind = 'scatter')
-            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-            plt.show()
+        df_output.plot(x = 'Cross Sections', y = 'Flow(m3/s)', kind = 'scatter')
+        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        plt.show()
 
-            df_output.plot(x = 'Cross Sections', y = 'WSE(m)', kind = 'scatter')
-            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-            plt.show()
+        df_output.plot(x = 'Cross Sections', y = 'WSE(m)', kind = 'scatter')
+        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        plt.show()
 
-            df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
-            plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-            plt.show()
-            print("finalizou")
+        df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
+        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        plt.show()
+        print("finalizou")
+
+        return df_output
 
     def changeMannings(self, z):
         #entrada -> river (string), reach (string), node(string), Manning left bank(float), Manning channel(float), Manning right bank(float)
