@@ -1,5 +1,5 @@
 Message  | Plan: 'Plan_1983' (ItajaiProjeto.p04)
-Message  | Simulation started at: 02May2021 03:35:40 AM
+Message  | Simulation started at: 02May2021 06:39:21 AM
 Message  | PROCESS:RasGeomWriter
 Message  | 
 Message  | Writing Geometry
@@ -102,12 +102,12 @@ Progress | 0.9444445
 Progress | 0.9666667
 Progress | 0.9888889
 Progress | 1.972854E-05
+Message  | 28APR1983 12:00:56       timestep =            28.125      (sec)
 Progress | 2.002446E-02
 Progress | 0.0400292
 Progress | 6.003393E-02
 Progress | 8.003867E-02
 Progress | 0.1000434
-Message  | 02MAY1983 06:20:37       timestep =            28.125      (sec)
 Progress | 0.1200481
 Progress | 0.1400529
 Progress | 0.1600576
@@ -117,47 +117,43 @@ Progress | 0.2200718
 Progress | 0.2400765
 Progress | 0.2600813
 Progress | 0.280086
-Message  | 08MAY1983 05:25:47       timestep =            56.25        (sec)
-Progress | 0.3001006
-Progress | 0.3201053
-Message  | 09MAY1983 15:43:35       timestep =            28.125      (sec)
-Progress | 0.3401101
-Progress | 0.3601148
-Progress | 0.3801196
-Progress | 0.4001243
-Progress | 0.420129
-Progress | 0.4401338
-Progress | 0.4601385
-Progress | 0.4801432
-Progress | 0.5001479
-Progress | 0.5201527
-Progress | 0.5401574
-Progress | 0.5601622
-Progress | 0.5801669
-Progress | 0.6001716
-Progress | 0.6201764
-Progress | 0.6401811
-Message  | 20MAY1983 03:35:09       timestep =            14.063      (sec)
-Progress | 0.6601858
-Progress | 0.6801906
-Progress | 0.7001953
-Message  | 22MAY1983 05:43:21       timestep =            28.125      (sec)
-Progress | 0.720205
-Message  | 22MAY1983 22:11:01       timestep =            56.25        (sec)
-Progress | 0.7402097
-Message  | 23MAY1983 04:24:08       timestep =            28.125      (sec)
-Progress | 0.7602144
-Progress | 0.7802192
-Progress | 0.8002239
-Progress | 0.8202286
-Progress | 0.8402334
-Progress | 0.8602381
-Progress | 0.8802429
-Progress | 0.9002476
-Progress | 0.9202523
-Progress | 0.9402571
-Progress | 0.9602618
-Progress | 0.9802665
+Progress | 0.3000908
+Progress | 0.3200955
+Progress | 0.3401002
+Progress | 0.3601049
+Progress | 0.3801097
+Progress | 0.4001144
+Progress | 0.4201192
+Progress | 0.4401239
+Progress | 0.4601286
+Progress | 0.4801334
+Progress | 0.5001381
+Progress | 0.5201429
+Progress | 0.5401475
+Progress | 0.5601523
+Progress | 0.580157
+Progress | 0.6001618
+Progress | 0.6201665
+Progress | 0.6401712
+Message  | 19MAY1983 21:40:47       timestep =            14.063      (sec)
+Progress | 0.660176
+Progress | 0.6801807
+Progress | 0.7001855
+Message  | 22MAY1983 06:15:42       timestep =            28.125      (sec)
+Progress | 0.7201951
+Progress | 0.7401999
+Progress | 0.7602046
+Progress | 0.7802093
+Progress | 0.8002141
+Progress | 0.8202188
+Progress | 0.8402236
+Progress | 0.8602282
+Progress | 0.880233
+Progress | 0.9002377
+Progress | 0.9202425
+Progress | 0.9402472
+Progress | 0.9602519
+Progress | 0.9802567
 Message  | 
 Message  | Writing Results to DSS
 Message  |  
@@ -228,7 +224,7 @@ Message  |
 Message  | Computation Task	Time(hh:mm:ss)
 Message  | Completing Geometry(64)	<1
 Message  | Preprocessing Geometry(64)	       1
-Message  | Unsteady Flow Computations(64)	      34
-Message  | Post-Processing(64)	      39
+Message  | Unsteady Flow Computations(64)	      46
+Message  | Post-Processing(64)	      47
 Message  | Computing Maps(64)	<1
-Message  | Complete Process	    1:16
+Message  | Complete Process	    1:36
