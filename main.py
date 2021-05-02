@@ -29,7 +29,8 @@ class Project(object):
         self.modifiedFlows = []
         self.inputNormalDepth = []
         self.modifiedNormalDepth = []
-
+        self.inputStages = []
+        self.modifiedStages = []
 class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     prj_path = ""
     version = ""
@@ -44,7 +45,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     limitsManning = [0,0]
     limitsFlow = [0,0]
     limitsNormalDepth = [0,0]
-    limitsWaterStage = [0,0]
+    incrementWaterStage = 0
     project = Project("","","","","","","","","")
 
     def __init__(self):
@@ -53,7 +54,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.populate()
         self.pushButton.clicked.connect(self.checks)
-        
+    
     def populate(self):
         self.model = QtWidgets.QFileSystemModel()
         self.model.setRootPath((QtCore.QDir.rootPath()))
@@ -213,7 +214,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.limitsNormalDepth = [self.spinBox_10.value(),self.spinBox_9.value()]
                 return True
         if self.waterStage:
-            if self.spinBox_12.value() == 0 or self.spinBox_11.value() == 0:
+            if self.doubleSpinBox.value() == 0.00:
                 self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
                 myFont=QtGui.QFont()
                 myFont.setBold(True)
@@ -221,7 +222,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.label_5.setStyleSheet("color: red")
                 return False
             else:
-                self.limitsWaterStage = [self.spinBox_12.value(),self.spinBox_11.value()]
+                self.incrementWaterStage = self.doubleSpinBox.value()
                 return True
 
     def checks(self):
@@ -260,9 +261,25 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         if self.normalDepth:
             self.monteCarloNormalDepth()
 
+        if self.waterStage:
+            self.monteCarloStage()
+
         #self.project.RC.Project_Close()
         #self.project.RC.QuitRas()
         print("quitou")
+
+    def monteCarloStage(self):
+        self.getStages()
+        self.project.modifiedStages = self.incrementFactorSum(self.iterWaterStage, self.iterWaterStage, self.project.inputStages, self.incrementWaterStage)
+        iterations = (2*self.iterWaterStage)+1
+        for z in range (0, iterations):
+            self.changeStages(z)
+            self.project.RC.Compute_CurrentPlan(None,None,True)
+            self.extractResults()
+        self.project.RC.Project_Close()
+        self.updateFiles()
+        self.project.RC.Project_Open(self.prj_path)
+
 
     def monteCarloManning(self):
         self.getMannings()
@@ -271,6 +288,9 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.changeMannings(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             self.extractResults()
+        self.project.RC.Project_Close()
+        self.updateFiles()
+        self.project.RC.Project_Open(self.prj_path)
 
     def monteCarloFlow(self):
         self.getFlows()
@@ -281,20 +301,22 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             self.extractResults()
+        self.project.RC.Project_Close()
+        self.updateFiles()
+        self.project.RC.Project_Open(self.prj_path)
 
     def monteCarloNormalDepth(self):
         self.getNormalDepth()
-        print(self.limitsNormalDepth[1])
-        print(self.limitsNormalDepth[0])
-        print(self.iterNormalDepth)
         self.project.modifiedNormalDepth = self.incrementFactorMultiply(self.limitsNormalDepth[1],self.limitsNormalDepth[0], self.project.inputNormalDepth, self.iterNormalDepth)
-        print(self.project.modifiedNormalDepth)
         for z in range (0, self.iterNormalDepth+1):
             self.changeNormalDepth(z)
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             self.extractResults()
+        self.project.RC.Project_Close()
+        self.updateFiles()
+        self.project.RC.Project_Open(self.prj_path)
 
     def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
         parametersModified = []
@@ -317,6 +339,77 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #print("Modified")
         #print(parametersModified)
         return parametersModified
+
+    def incrementFactorSum(self, iterationsMax, iterationsMin, parameters, increment):
+        print(increment)
+        print(iterationsMax)
+        parametersModified = []
+        listParam2 = []
+        for x in range(0, len(parameters)):
+            listParam = []
+            for y in range(0, len(parameters[x])):
+                [listParam2.append(float(parameters[x][y])+int(n)*float(increment)) for n in range(-iterationsMin, iterationsMax+1)]
+                listParam.append(listParam2)
+                listParam2 = []
+
+            parametersModified.append(listParam)
+
+        print(parametersModified)
+
+        return parametersModified
+
+    def getStages(self):
+        print(self.project.planFile)
+        nodes = []
+        river = []
+        reach = []
+
+        nodes_aux = []
+        river_aux = []
+        reach_aux = []
+
+        with open(self.project.geometryFile,'r') as file:
+            lines = file.readlines()
+            for i in range(0, len(lines)):
+                line = lines[i]
+                if "River Reach=" in line and len(river_aux)>0:
+                    reach.append(reach_aux)
+                    river.append(river_aux)
+                    nodes.append(nodes_aux)
+
+                    nodes_aux = []
+                    river_aux = []
+                    reach_aux = []
+                if "River Reach=" in line:
+                    if "CM River Reach=" not in line:
+                        reach_aux.append(line.split(",")[1].replace("\n",""))
+                        river_aux.append(line.split(",")[0].split("=")[1])
+                elif "Type RM Length L Ch R" in line:
+                    nodes_aux.append(line.split("=")[1].split(",")[1])
+
+            if reach_aux != []:
+                reach.append(reach_aux)
+                river.append(river_aux)
+                nodes.append(nodes_aux)
+
+        self.project.rivers = river
+        self.project.reaches = reach
+        self.project.nodes = nodes
+        start = False
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if "Stage Hydrograph=" in line:
+                    start = True
+                if "DSS Path=" in line:
+                    start = False
+                if start and "Stage Hydrograph=" not in line:
+                    stagesLine = [line[index : index + 8] for index in range(0, len(line), 8)]
+                    stagesLine = [stage.replace(" ", "") for stage in stagesLine]
+                    stagesLine.remove("\n")
+                    self.project.inputStages.append(stagesLine)
+
+        #print(self.project.inputStages)
 
     def extractResults(self):
         #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
@@ -616,6 +709,44 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         with open(self.project.planFile,'w') as file:
             file.writelines(lines)
 
+    def changeStages(self, z):
+        newStages = []
+        for x in range(0, len(self.project.modifiedStages)):
+            stagesString = ""
+            for y in range (0,len(self.project.modifiedStages[x])):
+                stage = str(self.project.modifiedStages[x][y][z])
+                if len(stage)<7:
+                    for i in range(0, 8-len(stage)):
+                        stage+="0"
+                if len(stage)>7:
+                    value = stage.split(".")[0]
+                    gap =  8-len(value)
+                    stage = round(float(stage),gap-1)
+                    stage = str(stage)
+                    while len(stage) < 8:
+                        stage += "0"
+                
+                stagesString += " "+stage
+            newStages.append(stagesString+"\n")
+
+        print(newStages)
+
+        with open(self.project.planFile,'r') as file:
+            lines = file.readlines()
+            start = False
+            x=0
+            for line in lines:
+                if "Stage Hydrograph=" in line:
+                    start = True
+                if "DSS Path=" in line:
+                    start = False
+                if start and "Stage Hydrograph=" not in line:
+                    lines = [newStages[x] if string==line else string for string in lines]
+                    x+=1
+        
+        with open(self.project.planFile,'w') as file:
+            file.writelines(lines)
+
     def createBackup(self):
         self.project.RC.Project_Close()
 
@@ -628,6 +759,15 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         geomDestination = os.path.join(pathBackup,self.project.geometryFile.split('\\')[-1])
         copyfile(self.project.planFile, planDestination)
         copyfile(self.project.geometryFile, geomDestination)
+
+    def updateFiles(self):
+        actualPath = os.path.dirname(os.path.abspath(__file__))
+        directory = "Backup Files"
+        pathBackup = os.path.join(actualPath, directory)
+        planDestination = os.path.join(pathBackup,self.project.planFile.split('\\')[-1])
+        geomDestination = os.path.join(pathBackup,self.project.geometryFile.split('\\')[-1])
+        copyfile(planDestination, self.project.planFile)
+        copyfile(geomDestination, self.project.geometryFile)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

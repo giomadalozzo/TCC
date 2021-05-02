@@ -1,22 +1,230 @@
 Message  | Plan: 'Plan_1983' (ItajaiProjeto.p04)
-Message  | Simulation started at: 26Apr2021 03:31:20 AM
+Message  | Simulation started at: 01May2021 11:01:42 PM
 Message  | PROCESS:RasGeomWriter
 Message  | 
 Message  | Writing Geometry
 Progress | 1
 Message  | Completed Writing Geometry
 Message  | PROCESS:RASGeomPreprocess
-Message  | Process: RasGeomPreprocess64 killed.
+Message  | 	
+Message  | Geometric Preprocessor HEC-RAS 5.0.7 March 2019
+Progress | 0.2
+Progress | 0.3
+Progress | 3.968254E-03
+Progress | 2.777778E-02
+Progress | 0.0515873
+Progress | 7.539683E-02
+Progress | 9.920635E-02
+Progress | 0.1230159
+Progress | 0.1468254
+Progress | 0.1706349
+Progress | 0.1944444
+Progress | 0.218254
+Progress | 0.2420635
+Progress | 0.265873
+Progress | 0.2896825
+Progress | 0.3134921
+Progress | 0.3373016
+Progress | 0.3611111
+Progress | 0.3849206
+Progress | 0.4087301
+Progress | 0.4325397
+Progress | 0.4563492
+Progress | 0.4801587
+Progress | 0.5039682
+Progress | 0.5277778
+Progress | 0.5515873
+Progress | 0.5753968
+Progress | 0.5992063
+Progress | 0.6230159
+Progress | 0.6468254
+Progress | 0.6706349
+Progress | 0.6944444
+Progress | 0.718254
+Progress | 0.7420635
+Progress | 0.765873
+Progress | 0.7896826
+Progress | 0.8134921
+Progress | 0.8373016
+Progress | 0.8611111
+Progress | 0.8849207
+Progress | 0.9087301
+Progress | 0.9325397
+Progress | 0.9563492
+Progress | 0.9801587
+Progress | 1
 Message  | 
-Message  | Note - Computations stopped by the user !!!
+Message  | Finished Processing Geometry
 Message  | 
+Message  | Starting to copy Geometry Data to Results
+Message  | Completed copying Geometry Data to Results
 Message  | 
-Message  | Error with program: RASGeomPreprocess64.exe Exit Code = -1
+Message  | PROCESS:RasUnsteady
 Message  | 
+Message  | Performing Unsteady Flow Simulation  HEC-RAS 5.0.7 March 2019
+Message  | 
+Progress | 0.1
+Progress | 0.2
+Progress | 0.3
+Progress | 0.3201757
+Progress | 0.3403514
+Progress | 0.3605271
+Progress | 0.3807028
+Progress | 0.4008785
+Progress | 0.4210542
+Progress | 0.4412299
+Progress | 0.4614056
+Progress | 0.4815813
+Progress | 0.5017571
+Progress | 0.5219328
+Progress | 0.5421085
+Progress | 0.5622842
+Progress | 0.5824599
+Message  | Maximum adaptive timestep = 01:00:00    Minimum adaptive timestep = 00:01.758
+Message  | Initial adaptive timestep = 00:56.25
+Message  | 
+Progress | 0.6111112
+Progress | 0.6333334
+Progress | 0.6555556
+Progress | 0.6777778
+Progress | 0.7
+Progress | 0.7222223
+Progress | 0.7444445
+Progress | 0.7666667
+Progress | 0.7888889
+Progress | 0.8111112
+Progress | 0.8333334
+Progress | 0.8555556
+Progress | 0.8777778
+Progress | 0.9
+Progress | 0.9222223
+Progress | 0.9444445
+Progress | 0.9666667
+Progress | 0.9888889
+Progress | 1.972854E-05
+Message  | 28APR1983 12:00:56       timestep =            28.125      (sec)
+Progress | 2.002446E-02
+Progress | 0.0400292
+Progress | 6.003393E-02
+Progress | 8.003867E-02
+Progress | 0.1000434
+Progress | 0.1200481
+Progress | 0.1400529
+Progress | 0.1600576
+Progress | 0.1800623
+Progress | 0.2000671
+Progress | 0.2200718
+Progress | 0.2400765
+Progress | 0.2600813
+Progress | 0.280086
+Progress | 0.3000908
+Progress | 0.3200955
+Progress | 0.3401002
+Progress | 0.3601049
+Progress | 0.3801097
+Progress | 0.4001144
+Progress | 0.4201192
+Progress | 0.4401239
+Progress | 0.4601286
+Progress | 0.4801334
+Progress | 0.5001381
+Progress | 0.5201429
+Progress | 0.5401475
+Progress | 0.5601523
+Progress | 0.580157
+Progress | 0.6001618
+Progress | 0.6201665
+Progress | 0.6401712
+Message  | 19MAY1983 21:40:47       timestep =            14.063      (sec)
+Progress | 0.660176
+Progress | 0.6801807
+Progress | 0.7001855
+Message  | 22MAY1983 06:15:42       timestep =            28.125      (sec)
+Progress | 0.7201951
+Progress | 0.7401999
+Progress | 0.7602046
+Progress | 0.7802093
+Progress | 0.8002141
+Progress | 0.8202188
+Progress | 0.8402236
+Progress | 0.8602282
+Progress | 0.880233
+Progress | 0.9002377
+Progress | 0.9202425
+Progress | 0.9402472
+Progress | 0.9602519
+Progress | 0.9802567
+Message  | 
+Message  | Writing Results to DSS
+Message  |  
+Progress | 1
+Message  | 
+Message  | Finished Unsteady Flow Simulation
+Message  | Reading Data for Post Process
+Message  | PROCESS:RasSteady
+Progress | 0.1
+Progress | 0.2
+Message  | 	
+Message  | Running Post Processor  HEC-RAS 5.0.7 March 2019
+Progress | 0.1
+Progress | 0.3
+Progress | 0.4
+Progress | 0.5
+Progress | 0.6
+Progress | 0.7
+Progress | 0.8
+Progress | 0.9
+Progress | 1
+Progress | 0.01
+Progress | 0.04
+Progress | 0.07
+Progress | 0.09
+Progress | 0.12
+Progress | 0.14
+Progress | 0.17
+Progress | 0.2
+Progress | 0.23
+Progress | 0.26
+Progress | 0.28
+Progress | 0.3
+Progress | 0.33
+Progress | 0.36
+Progress | 0.39
+Progress | 0.41
+Progress | 0.43
+Progress | 0.46
+Progress | 0.49
+Progress | 0.52
+Progress | 0.54
+Progress | 0.57
+Progress | 0.6
+Progress | 0.63
+Progress | 0.66
+Progress | 0.69
+Progress | 0.72
+Progress | 0.75
+Progress | 0.78
+Progress | 0.8
+Progress | 0.83
+Progress | 0.85
+Progress | 0.88
+Progress | 0.91
+Progress | 0.94
+Progress | 0.97
+Progress | 1
+Message  | 
+Message  | Finished Post Processing
+Message  | 
+Message  | PROCESS:RasComputeMaps
+Message  | Computing Stored Results Maps
+Message  | There are no stored maps setup for this plan.
 Message  | 
 Message  | Computations Summary
 Message  | 
 Message  | Computation Task	Time(hh:mm:ss)
 Message  | Completing Geometry(64)	<1
-Message  | Preprocessing Geometry(64)	<1
-Message  | Complete Process	       1
+Message  | Preprocessing Geometry(64)	       1
+Message  | Unsteady Flow Computations(64)	      36
+Message  | Post-Processing(64)	      39
+Message  | Computing Maps(64)	<1
+Message  | Complete Process	    1:17

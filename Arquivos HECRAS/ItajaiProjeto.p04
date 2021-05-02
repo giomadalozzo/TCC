@@ -3,7 +3,7 @@ Program Version=5.07
 Short Identifier=Cheia1983                                                       
 Simulation Date=28APR1983,1200,31MAY1983,1200
 Geom File=g01
-Flow File=u01
+Flow File=u02
 Subcritical Flow
 K Sum by GR= 0 
 Std Step Tol= 0.003 
