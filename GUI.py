@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIEeaNjH.ui'
+## Form generated from reading UI file 'GUIqyjqgj.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -105,6 +105,7 @@ class Ui_MainWindow(object):
         self.spinBox.setGeometry(QRect(460, 350, 41, 22))
         self.spinBox.setMinimum(2)
         self.spinBox.setMaximum(9999)
+        self.spinBox.setSingleStep(2)
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
         self.pushButton.setGeometry(QRect(450, 590, 131, 61))
@@ -209,11 +210,14 @@ class Ui_MainWindow(object):
         self.spinBox_2.setGeometry(QRect(460, 390, 42, 22))
         self.spinBox_2.setMinimum(2)
         self.spinBox_2.setMaximum(9999)
+        self.spinBox_2.setSingleStep(2)
+        self.spinBox_2.setValue(2)
         self.spinBox_3 = QSpinBox(self.centralwidget)
         self.spinBox_3.setObjectName(u"spinBox_3")
         self.spinBox_3.setGeometry(QRect(460, 430, 42, 22))
         self.spinBox_3.setMinimum(2)
         self.spinBox_3.setMaximum(9999)
+        self.spinBox_3.setSingleStep(2)
         self.spinBox_4 = QSpinBox(self.centralwidget)
         self.spinBox_4.setObjectName(u"spinBox_4")
         self.spinBox_4.setGeometry(QRect(350, 470, 42, 22))

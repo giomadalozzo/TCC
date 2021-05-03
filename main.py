@@ -11,10 +11,11 @@ from shutil import copyfile
 import GUI
 
 class Project(object):
-    def __init__(self, nodes, reaches, rivers, leftMannings, channelMannings, rightMannings, RC, planFile, geometryFile):
+    def __init__(self, nodes, reaches, rivers, centerLengths,leftMannings, channelMannings, rightMannings, RC, planFile, geometryFile):
         self.nodes = nodes
         self.reaches = reaches
         self.rivers = rivers
+        self.centerLengths = centerLengths
         self.leftMannings = leftMannings
         self.channelMannings = channelMannings
         self.rightMannings = rightMannings
@@ -51,7 +52,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     limitsFlow = [0,0]
     limitsNormalDepth = [0,0]
     incrementWaterStage = 0
-    project = Project("","","","","","","","","")
+    project = Project("","","","","","","","","","")
 
     def __init__(self):
         super(Interface, self).__init__()
@@ -259,15 +260,31 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
         if self.manning:
             self.monteCarloManning()
+            RC=self.project.RC
+            plan = self.project.planFile
+            geom = self.project.geometryFile
+            project = Project("","","","","","","", RC, plan, geom)
 
         if self.flow:
             self.monteCarloFlow()
+            RC=self.project.RC
+            plan = self.project.planFile
+            geom = self.project.geometryFile
+            project = Project("","","","","","","", RC, plan, geom)
 
         if self.normalDepth:
             self.monteCarloNormalDepth()
+            RC=self.project.RC
+            plan = self.project.planFile
+            geom = self.project.geometryFile
+            project = Project("","","","","","","", RC, plan, geom)
 
         if self.waterStage:
             self.monteCarloStage()
+            RC=self.project.RC
+            plan = self.project.planFile
+            geom = self.project.geometryFile
+            project = Project("","","","","","","", RC, plan, geom)
 
         self.project.RC.Project_Close()
         self.project.RC.QuitRas()
@@ -280,61 +297,132 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.label_5.setStyleSheet("color: green")
         self.label_5.show()
 
-
     def monteCarloStage(self):
         self.getStages()
         self.project.modifiedStages = self.incrementFactorSum(self.iterWaterStage, self.iterWaterStage, self.project.inputStages, self.incrementWaterStage)
         iterations = (2*self.iterWaterStage)+1
+        parameterInfo = []
+        for x in range(-self.iterWaterStage, self.iterWaterStage+1):
+            if x == 0:
+                parameterInfo.append("Water Stage Original")
+            else:
+                actual = round(x*float(self.incrementWaterStage), 2)
+                string = "Water Stage " + str(actual) + "m"
+                parameterInfo.append(string)
+
         for z in range (0, iterations):
             self.changeStages(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            df = self.extractResults()
+            df = self.extractResults(parameterInfo[z], "Water Stage")
             self.project.dfResultsStages.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
         print(self.project.dfResultsStages)
         print(len(self.project.dfResultsStages))
+        self.resultSummary(self.project.dfResultsStages)
         self.project.RC.Project_Open(self.prj_path)
 
 
     def monteCarloManning(self):
         self.getMannings()
         self.project.manningsModified = self.incrementFactorMultiply(self.limitsManning[1],self.limitsManning[0], self.project.channelMannings, self.iterManning)
+        
+        modifiedValues = (self.iterManning)//2
+        maxIncrement = self.limitsManning[1]/modifiedValues
+        minIncrement = self.limitsManning[0]/modifiedValues
+
+        parameterInfo = []
+        print(modifiedValues)
+        for x in range(-modifiedValues, modifiedValues+1):
+            if x == 0:
+                parameterInfo.append("Manning Original")
+            elif x<0:
+                actual = round(x*float(minIncrement), 2)
+                string = "Manning " + str(actual) + "%"
+                parameterInfo.append(string)
+            else:
+                actual = round(x*float(maxIncrement), 2)
+                string = "Manning " + str(actual) + "%"
+                parameterInfo.append(string)
+
+        print(parameterInfo)
         for z in range (0, self.iterManning+1):
             self.changeMannings(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            df = self.extractResults()
+            df = self.extractResults(parameterInfo[z], "Manning")
+            print(df)
             self.project.dfResultsManning.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
+        self.resultSummary(self.project.dfResultsManning)
         self.project.RC.Project_Open(self.prj_path)
 
     def monteCarloFlow(self):
         self.getFlows()
         self.project.modifiedFlows = self.incrementFactorMultiply(self.limitsFlow[1],self.limitsFlow[0], self.project.inputFlows, self.iterFlow)
+        modifiedValues = (self.iterFlow)//2
+        maxIncrement = self.limitsFlow[1]/modifiedValues
+        minIncrement = self.limitsFlow[0]/modifiedValues
+
+        parameterInfo = []
+        print(modifiedValues)
+        for x in range(-modifiedValues, modifiedValues+1):
+            if x == 0:
+                parameterInfo.append("Vazão Original")
+            elif x<0:
+                actual = round(x*float(minIncrement), 2)
+                string = "Vazão " + str(actual) + "%"
+                parameterInfo.append(string)
+            else:
+                actual = round(x*float(maxIncrement), 2)
+                string = "Vazão " + str(actual) + "%"
+                parameterInfo.append(string)
+
+        print(parameterInfo)
         for z in range (0, self.iterFlow+1):
             self.changeFlows(z)
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            df = self.extractResults()
-            self.project.dfResultsFlow.append(df)
+            df = self.extractResults(parameterInfo[z], "Vazão")
+            self.project.dfResultsFlows.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
+        self.resultSummary(self.project.dfResultsFlows)
         self.project.RC.Project_Open(self.prj_path)
 
     def monteCarloNormalDepth(self):
         self.getNormalDepth()
         self.project.modifiedNormalDepth = self.incrementFactorMultiply(self.limitsNormalDepth[1],self.limitsNormalDepth[0], self.project.inputNormalDepth, self.iterNormalDepth)
+        modifiedValues = (self.iterNormalDepth)//2
+        maxIncrement = self.limitsNormalDepth[1]/modifiedValues
+        minIncrement = self.limitsNormalDepth[0]/modifiedValues
+
+        parameterInfo = []
+        print(modifiedValues)
+        for x in range(-modifiedValues, modifiedValues+1):
+            if x == 0:
+                parameterInfo.append("Normal Depth Original")
+            elif x<0:
+                actual = round(x*float(minIncrement), 2)
+                string = "Normal Depth " + str(actual) + "%"
+                parameterInfo.append(string)
+            else:
+                actual = round(x*float(maxIncrement), 2)
+                string = "Normal Depth " + str(actual) + "%"
+                parameterInfo.append(string)
+
+        print(parameterInfo)
         for z in range (0, self.iterNormalDepth+1):
             self.changeNormalDepth(z)
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
-            df = self.extractResults()
+            df = self.extractResults(parameterInfo[z], "Normal Depth")
             self.project.dfResultsNormalDepth.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
+        self.resultSummary(self.project.dfResultsNormalDepth)
         self.project.RC.Project_Open(self.prj_path)
 
     def incrementFactorMultiply(self, percentageMax, percentageMin, parameters, discretization):
@@ -382,10 +470,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         nodes = []
         river = []
         reach = []
+        centerLengths = []
 
         nodes_aux = []
         river_aux = []
         reach_aux = []
+        centerLengths_aux = []
 
         with open(self.project.geometryFile,'r') as file:
             lines = file.readlines()
@@ -395,25 +485,45 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     reach.append(reach_aux)
                     river.append(river_aux)
                     nodes.append(nodes_aux)
+                    centerLengths.append(centerLengths_aux)
 
                     nodes_aux = []
                     river_aux = []
                     reach_aux = []
+                    centerLengths_aux = []
                 if "River Reach=" in line:
                     if "CM River Reach=" not in line:
                         reach_aux.append(line.split(",")[1].replace("\n",""))
                         river_aux.append(line.split(",")[0].split("=")[1])
                 elif "Type RM Length L Ch R" in line:
                     nodes_aux.append(line.split("=")[1].split(",")[1])
+                    centerLengths_aux.append(line.split("=")[1].split(",")[3])
 
             if reach_aux != []:
                 reach.append(reach_aux)
                 river.append(river_aux)
                 nodes.append(nodes_aux)
+                centerLengths.append(centerLengths_aux)
 
         self.project.rivers = river
         self.project.reaches = reach
         self.project.nodes = nodes
+        sumLengths=0
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if centerLengths[x][y] == '':
+                    centerLengths[x][y] = 0
+                sumLengths+=float(centerLengths[x][y])
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if y==0:
+                    centerLengths[x][y] = sumLengths
+                else:
+                    centerLengths[x][y] = float(centerLengths[x][y-1]) - float(centerLengths[x][y])
+
+        self.project.centerLengths = centerLengths
         start = False
         with open(self.project.planFile,'r') as file:
             lines = file.readlines()
@@ -430,7 +540,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
         #print(self.project.inputStages)
 
-    def extractResults(self):
+    def extractResults(self, iteration, parameter):
         #entrada -> river ID (int), reach ID (int), node ID (int), param para obras hidráulicas (int) (dá pra usar None), profile ID (int), var ID (int) (WS = 2, vazão = 9, velocidade = 23)
         #saída -> resultado para dada seção
         resultsWS = []
@@ -438,6 +548,10 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         resultsFlow = []
         riverIteration = []
         reachIteration = []
+        parameterList = []
+        iterations = []
+        lengths = []
+        
         for x in range(0,len(self.project.rivers)):
             for y in range(0, len(self.project.nodes[x])):
                 resultsWS.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 2)[0])
@@ -445,23 +559,26 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 resultsFlow.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 9)[0])
                 riverIteration.append(self.project.rivers[x][0])
                 reachIteration.append(self.project.reaches[x][0])
+                lengths.append(self.project.centerLengths[x][y])
+                parameterList.append(parameter)
+                iterations.append(iteration)
 
-        output = {'Cross Sections': self.project.nodes[x],'River': riverIteration,'Reach': reachIteration,'WSE(m)':resultsWS, 'Flow(m3/s)':resultsFlow, 'V (m/s)':resultsV}
+        output = {'Cross Sections': self.project.nodes[x],'River': riverIteration,'Reach': reachIteration, 'Parameter': parameterList, 'Iteration':iterations, 'Center Length(m)':lengths,'WSE(m)':resultsWS, 'Flow(m3/s)':resultsFlow, 'V (m/s)':resultsV}
         df_output = pd.DataFrame(output)
         df_output.set_index('Cross Sections')
-
-        df_output.plot(x = 'Cross Sections', y = 'Flow(m3/s)', kind = 'scatter')
-        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-        plt.show()
-
-        df_output.plot(x = 'Cross Sections', y = 'WSE(m)', kind = 'scatter')
-        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-        plt.show()
-
-        df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
-        plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
-        plt.show()
-        print("finalizou")
+#
+        #df_output.plot(x = 'Cross Sections', y = 'Flow(m3/s)', kind = 'scatter')
+        #plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        #plt.show()
+#
+        #df_output.plot(x = 'Cross Sections', y = 'WSE(m)', kind = 'scatter')
+        #plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        #plt.show()
+#
+        #df_output.plot(x = 'Cross Sections', y = 'V (m/s)', kind = 'scatter')
+        #plt.tick_params(axis = "x", which = "both", bottom = False, top = False)
+        #plt.show()
+        #print("finalizou")
 
         return df_output
 
@@ -511,7 +628,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.project.planFile = os.path.join(path, file)
             elif file.endswith(geometryFile):
                 self.project.geometryFile = os.path.join(path, file)
-        
+
     def getMannings(self):
         nodes = []
         leftMannings = []
@@ -519,6 +636,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         rightMannings = []
         river = []
         reach = []
+        centerLengths = []
 
         nodes_aux = []
         leftMannings_aux = []
@@ -526,6 +644,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         rightMannings_aux = []
         river_aux = []
         reach_aux = []
+        centerLengths_aux = []
 
         with open(self.project.geometryFile,'r') as file:
             lines = file.readlines()
@@ -538,6 +657,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     leftMannings.append(leftMannings_aux)
                     channelMannings.append(channelMannings_aux)
                     rightMannings.append(rightMannings_aux)
+                    centerLengths.append(centerLengths_aux)
 
                     nodes_aux = []
                     leftMannings_aux = []
@@ -545,12 +665,15 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     rightMannings_aux = []
                     river_aux = []
                     reach_aux = []
+                    centerLengths_aux = []
                 if "River Reach=" in line:
                     if "CM River Reach=" not in line:
                         reach_aux.append(line.split(",")[1].replace("\n",""))
                         river_aux.append(line.split(",")[0].split("=")[1])
                 elif "Type RM Length L Ch R" in line:
                     nodes_aux.append(line.split("=")[1].split(",")[1])
+                    centerLengths_aux.append(line.split("=")[1].split(",")[3])
+                    print(centerLengths_aux)
                 elif "#Mann" in line:
                     n=8
                     line_aux = lines[i+1]
@@ -566,6 +689,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 leftMannings.append(leftMannings_aux)
                 channelMannings.append(channelMannings_aux)
                 rightMannings.append(rightMannings_aux)
+                centerLengths.append(centerLengths_aux)
 
         self.project.rivers = river
         self.project.reaches = reach
@@ -573,6 +697,23 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.leftMannings = leftMannings
         self.project.channelMannings = channelMannings
         self.project.rightMannings = rightMannings
+        
+        sumLengths=0
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if centerLengths[x][y] == '':
+                    centerLengths[x][y] = 0
+                sumLengths+=float(centerLengths[x][y])
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if y==0:
+                    centerLengths[x][y] = sumLengths
+                else:
+                    centerLengths[x][y] = float(centerLengths[x][y-1]) - float(centerLengths[x][y])
+
+        self.project.centerLengths = centerLengths
         #print("river")
         #print(river)
         #print("reach")
@@ -585,15 +726,18 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         #print(channelMannings)
         #print("right manning")
         #print(rightMannings)
+        print(self.project.centerLengths)
 
     def getFlows(self):
         nodes = []
         river = []
         reach = []
+        centerLengths = []
 
         nodes_aux = []
         river_aux = []
         reach_aux = []
+        centerLengths_aux = []
 
         with open(self.project.geometryFile,'r') as file:
             lines = file.readlines()
@@ -603,25 +747,45 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     reach.append(reach_aux)
                     river.append(river_aux)
                     nodes.append(nodes_aux)
+                    centerLengths.append(centerLengths_aux)
 
                     nodes_aux = []
                     river_aux = []
                     reach_aux = []
+                    centerLengths_aux = []
                 if "River Reach=" in line:
                     if "CM River Reach=" not in line:
                         reach_aux.append(line.split(",")[1].replace("\n",""))
                         river_aux.append(line.split(",")[0].split("=")[1])
                 elif "Type RM Length L Ch R" in line:
                     nodes_aux.append(line.split("=")[1].split(",")[1])
+                    centerLengths_aux.append(line.split("=")[1].split(",")[3])
 
             if reach_aux != []:
                 reach.append(reach_aux)
                 river.append(river_aux)
                 nodes.append(nodes_aux)
+                centerLengths.append(centerLengths_aux)
 
         self.project.rivers = river
         self.project.reaches = reach
         self.project.nodes = nodes
+        sumLengths=0
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if centerLengths[x][y] == '':
+                    centerLengths[x][y] = 0
+                sumLengths+=float(centerLengths[x][y])
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if y==0:
+                    centerLengths[x][y] = sumLengths
+                else:
+                    centerLengths[x][y] = float(centerLengths[x][y-1]) - float(centerLengths[x][y])
+
+        self.project.centerLengths = centerLengths
         start = False
         isInputFlow = True
         with open(self.project.planFile,'r') as file:
@@ -648,10 +812,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         nodes = []
         river = []
         reach = []
+        centerLengths = []
 
         nodes_aux = []
         river_aux = []
         reach_aux = []
+        centerLengths_aux = []
 
         with open(self.project.geometryFile,'r') as file:
             lines = file.readlines()
@@ -661,25 +827,45 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     reach.append(reach_aux)
                     river.append(river_aux)
                     nodes.append(nodes_aux)
+                    centerLengths.append(centerLengths_aux)
 
                     nodes_aux = []
                     river_aux = []
                     reach_aux = []
+                    centerLengths_aux = []
                 if "River Reach=" in line:
                     if "CM River Reach=" not in line:
                         reach_aux.append(line.split(",")[1].replace("\n",""))
                         river_aux.append(line.split(",")[0].split("=")[1])
                 elif "Type RM Length L Ch R" in line:
                     nodes_aux.append(line.split("=")[1].split(",")[1])
+                    centerLengths_aux.append(line.split("=")[1].split(",")[3])
 
             if reach_aux != []:
                 reach.append(reach_aux)
                 river.append(river_aux)
                 nodes.append(nodes_aux)
+                centerLengths.append(centerLengths_aux)
 
         self.project.rivers = river
         self.project.reaches = reach
         self.project.nodes = nodes
+        sumLengths=0
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if centerLengths[x][y] == '':
+                    centerLengths[x][y] = 0
+                sumLengths+=float(centerLengths[x][y])
+
+        for x in range(0, len(centerLengths)):
+            for y in range(0, len(centerLengths[x])):
+                if y==0:
+                    centerLengths[x][y] = sumLengths
+                else:
+                    centerLengths[x][y] = float(centerLengths[x][y-1]) - float(centerLengths[x][y])
+
+        self.project.centerLengths = centerLengths
 
         listNormalDepth = []
         print(self.project.planFile)
@@ -789,6 +975,56 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         geomDestination = os.path.join(pathBackup,self.project.geometryFile.split('\\')[-1])
         copyfile(planDestination, self.project.planFile)
         copyfile(geomDestination, self.project.geometryFile)
+
+    def resultSummary(self, dfList):
+        fig = plt.figure()
+        for frame in dfList:
+            subtitle = frame['Iteration'][0]
+            plt.scatter(frame['Center Length(m)'], frame['Flow(m3/s)'], label=subtitle, s=1)
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=len(dfList))
+        for x in range(0, len(dfList)):
+            lgnd.legendHandles[x]._sizes = [10]
+        plt.suptitle('Resultados da perturbação', fontsize=16)
+        plt.xlabel("River Length(m) ->", weight = 'bold')
+        plt.ylabel("Flow (m3/s)", weight = 'bold')
+        plt.gca().invert_xaxis()
+        plt.show()
+        filename = frame['Parameter'][0] + '_FlowResults.png'
+        fig.savefig(filename, dpi=fig.dpi)
+
+        fig = plt.figure()
+        for frame in dfList:
+            subtitle = frame['Iteration'][0]
+            plt.scatter(frame['Center Length(m)'], frame['WSE(m)'], label=subtitle, s=1)
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=len(dfList))
+        for x in range(0, len(dfList)):
+            lgnd.legendHandles[x]._sizes = [10]
+        plt.suptitle('Resultados da perturbação', fontsize=16)
+        plt.xlabel("River Length(m) ->", weight = 'bold')
+        plt.ylabel("WSE (m)", weight = 'bold')
+        plt.gca().invert_xaxis()
+        plt.show()
+        filename = frame['Parameter'][0] + '_WSEResults.png'
+        fig.savefig(filename, dpi=fig.dpi)
+
+        fig = plt.figure()
+        for frame in dfList:
+            subtitle = frame['Iteration'][0]
+            plt.scatter(frame['Center Length(m)'], frame['V (m/s)'], label=subtitle, s=1)
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=len(dfList))
+        for x in range(0, len(dfList)):
+            lgnd.legendHandles[x]._sizes = [10]
+        plt.suptitle('Resultados da perturbação', fontsize=16)
+        plt.xlabel("River Length(m) ->", weight = 'bold')
+        plt.ylabel("V (m/s)", weight = 'bold')
+        plt.gca().invert_xaxis()
+        plt.show()
+        filename = frame['Parameter'][0] + '_VResults.png'
+        fig.savefig(filename, dpi=fig.dpi)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

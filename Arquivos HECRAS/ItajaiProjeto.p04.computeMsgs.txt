@@ -1,5 +1,5 @@
 Message  | Plan: 'Plan_1983' (ItajaiProjeto.p04)
-Message  | Simulation started at: 02May2021 06:39:21 AM
+Message  | Simulation started at: 03May2021 12:08:42 AM
 Message  | PROCESS:RasGeomWriter
 Message  | 
 Message  | Writing Geometry
@@ -122,25 +122,27 @@ Progress | 0.3200955
 Progress | 0.3401002
 Progress | 0.3601049
 Progress | 0.3801097
+Message  | 11MAY1983 07:20:09       timestep =            14.063      (sec)
 Progress | 0.4001144
 Progress | 0.4201192
-Progress | 0.4401239
-Progress | 0.4601286
-Progress | 0.4801334
-Progress | 0.5001381
-Progress | 0.5201429
-Progress | 0.5401475
-Progress | 0.5601523
-Progress | 0.580157
-Progress | 0.6001618
-Progress | 0.6201665
-Progress | 0.6401712
-Message  | 19MAY1983 21:40:47       timestep =            14.063      (sec)
-Progress | 0.660176
-Progress | 0.6801807
-Progress | 0.7001855
-Message  | 22MAY1983 06:15:42       timestep =            28.125      (sec)
+Message  | 12MAY1983 09:49:55       timestep =            28.125      (sec)
+Progress | 0.4401288
+Progress | 0.4601336
+Progress | 0.4801383
+Progress | 0.5001431
+Progress | 0.5201477
+Progress | 0.5401525
+Progress | 0.5601572
+Progress | 0.580162
+Progress | 0.6001667
+Progress | 0.6201714
+Progress | 0.6401762
+Message  | 19MAY1983 17:40:33       timestep =            14.063      (sec)
+Progress | 0.6601809
+Progress | 0.6801856
+Progress | 0.7001904
 Progress | 0.7201951
+Message  | 22MAY1983 12:24:36       timestep =            28.125      (sec)
 Progress | 0.7401999
 Progress | 0.7602046
 Progress | 0.7802093
@@ -149,9 +151,11 @@ Progress | 0.8202188
 Progress | 0.8402236
 Progress | 0.8602282
 Progress | 0.880233
+Message  | 28MAY1983 03:29:46       timestep =            14.063      (sec)
 Progress | 0.9002377
 Progress | 0.9202425
 Progress | 0.9402472
+Message  | 30MAY1983 00:01:38       timestep =            28.125      (sec)
 Progress | 0.9602519
 Progress | 0.9802567
 Message  | 
@@ -224,7 +228,7 @@ Message  |
 Message  | Computation Task	Time(hh:mm:ss)
 Message  | Completing Geometry(64)	<1
 Message  | Preprocessing Geometry(64)	       1
-Message  | Unsteady Flow Computations(64)	      46
-Message  | Post-Processing(64)	      47
+Message  | Unsteady Flow Computations(64)	    1:07
+Message  | Post-Processing(64)	    1:04
 Message  | Computing Maps(64)	<1
-Message  | Complete Process	    1:36
+Message  | Complete Process	    2:14
