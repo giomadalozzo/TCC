@@ -14,7 +14,7 @@ Short ID:      Cheia1983
 
 Starting Time:   28Apr1983 1200
 
-Ending Time:     31May1983 1200
+Ending Time:     29Apr1983 1200
 
 
                 ################################################
@@ -25,7 +25,7 @@ Ending Time:     31May1983 1200
                 #                                              #
                 #          HEC-RAS 5.0.7 March 2019            #
                 #                                              #
-                #             03MAY21 at 00:08:45              #
+                #             04MAY21 at 06:56:50              #
                 #                                              #
                 ################################################
  
@@ -40,18 +40,18 @@ Ending Time:     31May1983 1200
 
          US Inflow       Lat Hydro      DS Outflow        SA Hydro     Groundwater       2D Inflow      2D Outflow      Diversions
          *********       *********      **********        ********     ***********       *********      **********      **********
-          4407574.                        4368066.                                                                                
+            15459.                          15150.                                                                                
 
                       River Reaches, Storage Areas, and 2D Areas
 
     Start 1D Reach   Starting SA's     Starting 2D  Final 1D Reach      Final SA's  Final 2D Areas
     **************   *************     ***********  **************      **********  **************
-           116747.                                         156475.                                
+           107539.                                         107849.                                
 
                              Error   Percent Error
 
                              *****   *************
-                             219.9        0.004861
+                             1.430        0.001163
 
 
 

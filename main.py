@@ -7,6 +7,9 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from shutil import copyfile
+import time
+import datetime
+import csv
 
 import GUI
 
@@ -53,6 +56,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
     limitsNormalDepth = [0,0]
     incrementWaterStage = 0
     project = Project("","","","","","","","","","")
+    start_time = ""
+    pathResults = ""
 
     def __init__(self):
         super(Interface, self).__init__()
@@ -196,7 +201,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 return False
             else:
                 self.limitsManning = [self.spinBox_8.value(),self.spinBox_7.value()]
-                return True
         if self.flow:
             if self.spinBox_5.value() == 0 or self.spinBox_6.value() == 0:
                 self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
@@ -207,7 +211,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 return False
             else:
                 self.limitsFlow = [self.spinBox_5.value(),self.spinBox_6.value()]
-                return True
         if self.normalDepth:
             if self.spinBox_10.value() == 0 or self.spinBox_9.value() == 0:
                 self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
@@ -218,7 +221,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 return False
             else:
                 self.limitsNormalDepth = [self.spinBox_10.value(),self.spinBox_9.value()]
-                return True
         if self.waterStage:
             if self.doubleSpinBox.value() == 0.00:
                 self.label_5.setText("VOCÊ ESQUECEU DE DIGITAR OS \nLIMITES DE PERTURBAÇÃO DO PARÂMETRO!")
@@ -229,7 +231,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 return False
             else:
                 self.incrementWaterStage = self.doubleSpinBox.value()
-                return True
+
+        return True
 
     def checks(self):
         if self.checkPrjFile() and self.checkAnalysis() and self.checkVersion() and self.checkIterations() and self.checkLimits():
@@ -241,6 +244,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         
     def inputsCorrects(self):
         self.label_5.setText("EXECUTANDO...AGUARDE!")
+        self.start_time = time.time()
         myFont=QtGui.QFont('Times', 20)
         myFont.setBold(True)
         self.label_5.setFont(myFont)
@@ -258,44 +262,63 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.RC.Project_Open(self.prj_path)
         print("Running")
 
+        actualPath = os.path.dirname(os.path.abspath(__file__))
+        directory = "Results Files"
+        pathResultsGeneral = os.path.join(actualPath, directory)
+        if os.path.isdir(pathResultsGeneral) is False:
+            os.mkdir(pathResultsGeneral)
+
+        now = datetime.datetime.now()
+        dt_string = now.strftime("%d%m%Y_%H%M%S")
+
+        directory2 = dt_string
+        self.pathResults = os.path.join(pathResultsGeneral, directory2)
+        if os.path.isdir(self.pathResults) is False:
+            os.mkdir(self.pathResults)
+
         if self.manning:
             self.monteCarloManning()
             RC=self.project.RC
             plan = self.project.planFile
             geom = self.project.geometryFile
-            project = Project("","","","","","","", RC, plan, geom)
+            self.project = Project("","","","","","","", RC, plan, geom)
 
         if self.flow:
             self.monteCarloFlow()
             RC=self.project.RC
             plan = self.project.planFile
             geom = self.project.geometryFile
-            project = Project("","","","","","","", RC, plan, geom)
+            self.project = Project("","","","","","","", RC, plan, geom)
 
         if self.normalDepth:
             self.monteCarloNormalDepth()
             RC=self.project.RC
             plan = self.project.planFile
             geom = self.project.geometryFile
-            project = Project("","","","","","","", RC, plan, geom)
+            self.project = Project("","","","","","","", RC, plan, geom)
 
         if self.waterStage:
             self.monteCarloStage()
             RC=self.project.RC
             plan = self.project.planFile
             geom = self.project.geometryFile
-            project = Project("","","","","","","", RC, plan, geom)
+            self.project = Project("","","","","","","", RC, plan, geom)
 
         self.project.RC.Project_Close()
         self.project.RC.QuitRas()
         print("quitou")
 
-        self.label_5.setText("PROCESSO FINALIZADO!")
+        gapTime = time.time() - self.start_time
+        executionTime = str(datetime.timedelta(seconds=gapTime)).split(".")[0]
+        self.label_5.setText("PROCESSO FINALIZADO EM " + executionTime + " !")
+        self.label_17.setText("Resultados na pasta: " + self.pathResults)
         myFont=QtGui.QFont('Times', 20)
         myFont.setBold(True)
         self.label_5.setFont(myFont)
         self.label_5.setStyleSheet("color: green")
+        self.label_17.setStyleSheet("color: green")
         self.label_5.show()
+        self.label_17.show()
 
     def monteCarloStage(self):
         self.getStages()
@@ -317,8 +340,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.project.dfResultsStages.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
-        print(self.project.dfResultsStages)
-        print(len(self.project.dfResultsStages))
+        #print(self.project.dfResultsStages)
+        #print(len(self.project.dfResultsStages))
         self.resultSummary(self.project.dfResultsStages)
         self.project.RC.Project_Open(self.prj_path)
 
@@ -332,7 +355,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         minIncrement = self.limitsManning[0]/modifiedValues
 
         parameterInfo = []
-        print(modifiedValues)
+        #print(modifiedValues)
         for x in range(-modifiedValues, modifiedValues+1):
             if x == 0:
                 parameterInfo.append("Manning Original")
@@ -345,12 +368,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 string = "Manning " + str(actual) + "%"
                 parameterInfo.append(string)
 
-        print(parameterInfo)
+        #print(parameterInfo)
         for z in range (0, self.iterManning+1):
             self.changeMannings(z)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             df = self.extractResults(parameterInfo[z], "Manning")
-            print(df)
+            #print(df)
             self.project.dfResultsManning.append(df)
         self.project.RC.Project_Close()
         self.updateFiles()
@@ -365,7 +388,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         minIncrement = self.limitsFlow[0]/modifiedValues
 
         parameterInfo = []
-        print(modifiedValues)
+        #print(modifiedValues)
         for x in range(-modifiedValues, modifiedValues+1):
             if x == 0:
                 parameterInfo.append("Vazão Original")
@@ -378,7 +401,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 string = "Vazão " + str(actual) + "%"
                 parameterInfo.append(string)
 
-        print(parameterInfo)
+        #print(parameterInfo)
         for z in range (0, self.iterFlow+1):
             self.changeFlows(z)
             self.project.RC.Project_Close()
@@ -399,7 +422,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         minIncrement = self.limitsNormalDepth[0]/modifiedValues
 
         parameterInfo = []
-        print(modifiedValues)
+        #print(modifiedValues)
         for x in range(-modifiedValues, modifiedValues+1):
             if x == 0:
                 parameterInfo.append("Normal Depth Original")
@@ -412,7 +435,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 string = "Normal Depth " + str(actual) + "%"
                 parameterInfo.append(string)
 
-        print(parameterInfo)
+        #print(parameterInfo)
         for z in range (0, self.iterNormalDepth+1):
             self.changeNormalDepth(z)
             self.project.RC.Project_Close()
@@ -433,8 +456,6 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             for y in range(0, len(parameters[x])):
                 factorMax = float(parameters[x][y]) * (1+(percentageMax/100))
                 factorMin = float(parameters[x][y]) * (1+(-percentageMin/100))
-                print(percentageMax)
-                print(percentageMin)
                 increment = (factorMax-factorMin)/(discretization-1)
                 for z in range(0, discretization):
                     listParam2.append(factorMin+(increment*z))
@@ -448,8 +469,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         return parametersModified
 
     def incrementFactorSum(self, iterationsMax, iterationsMin, parameters, increment):
-        print(increment)
-        print(iterationsMax)
+        #print(increment)
+        #print(iterationsMax)
         parametersModified = []
         listParam2 = []
         for x in range(0, len(parameters)):
@@ -461,12 +482,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
             parametersModified.append(listParam)
 
-        print(parametersModified)
+        #print(parametersModified)
 
         return parametersModified
 
     def getStages(self):
-        print(self.project.planFile)
+        #print(self.project.planFile)
         nodes = []
         river = []
         reach = []
@@ -559,6 +580,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 resultsFlow.append(self.project.RC.Output_NodeOutput(x+1, x+1, y+1, None, 1, 9)[0])
                 riverIteration.append(self.project.rivers[x][0])
                 reachIteration.append(self.project.reaches[x][0])
+                if y == len(self.project.nodes[x])-1:
+                    self.project.centerLengths[x][y] = 0.0
                 lengths.append(self.project.centerLengths[x][y])
                 parameterList.append(parameter)
                 iterations.append(iteration)
@@ -673,7 +696,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 elif "Type RM Length L Ch R" in line:
                     nodes_aux.append(line.split("=")[1].split(",")[1])
                     centerLengths_aux.append(line.split("=")[1].split(",")[3])
-                    print(centerLengths_aux)
+                    #print(centerLengths_aux)
                 elif "#Mann" in line:
                     n=8
                     line_aux = lines[i+1]
@@ -806,7 +829,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     self.project.inputFlows.append(listFlowLine)
                     listFlowLine = []
 
-        print(self.project.inputFlows)
+        #print(self.project.inputFlows)
 
     def getNormalDepth(self):
         nodes = []
@@ -868,7 +891,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.project.centerLengths = centerLengths
 
         listNormalDepth = []
-        print(self.project.planFile)
+        #print(self.project.planFile)
         with open(self.project.planFile,'r') as file:
             lines = file.readlines()
             for line in lines:
@@ -877,7 +900,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                     self.project.inputNormalDepth.append(listNormalDepth)
                     break
         
-        print(self.project.inputNormalDepth)
+        #print(self.project.inputNormalDepth)
     def changeFlows(self, z):
         newFlows = []
         for x in range(0, len(self.project.modifiedFlows)):
@@ -898,7 +921,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 flowsString += " "+flow
             newFlows.append(flowsString+"\n")
 
-        print(newFlows)
+        #print(newFlows)
 
         with open(self.project.planFile,'r') as file:
             lines = file.readlines()
@@ -936,7 +959,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 stagesString += " "+stage
             newStages.append(stagesString+"\n")
 
-        print(newStages)
+        #print(newStages)
 
         with open(self.project.planFile,'r') as file:
             lines = file.readlines()
@@ -977,54 +1000,119 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         copyfile(geomDestination, self.project.geometryFile)
 
     def resultSummary(self, dfList):
+
+        self.generateCSV(self.pathResults, dfList)
+
         fig = plt.figure()
         for frame in dfList:
+            print(frame)
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['Flow(m3/s)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=len(dfList))
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
-        plt.suptitle('Resultados da perturbação', fontsize=16)
-        plt.xlabel("River Length(m) ->", weight = 'bold')
-        plt.ylabel("Flow (m3/s)", weight = 'bold')
+        plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
+        plt.xlabel("River Length(m) →", fontsize=5)
+        plt.ylabel("Flow (m3/s)", fontsize=5)
         plt.gca().invert_xaxis()
-        plt.show()
-        filename = frame['Parameter'][0] + '_FlowResults.png'
-        fig.savefig(filename, dpi=fig.dpi)
+        ax = plt.gca()
+        ax.tick_params(axis = 'both', which = 'major', labelsize = 4)
+        ax.tick_params(axis = 'both', which = 'minor', labelsize = 4)
+        filename = self.pathResults+ "\\" +frame['Parameter'][0] + '_FlowResults.png'
+        fig.savefig(filename, dpi=400)
 
         fig = plt.figure()
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['WSE(m)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=len(dfList))
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
-        plt.suptitle('Resultados da perturbação', fontsize=16)
-        plt.xlabel("River Length(m) ->", weight = 'bold')
-        plt.ylabel("WSE (m)", weight = 'bold')
+        plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
+        plt.xlabel("River Length(m) →", fontsize=5)
+        plt.ylabel("WSE (m)", fontsize=5)
         plt.gca().invert_xaxis()
-        plt.show()
-        filename = frame['Parameter'][0] + '_WSEResults.png'
-        fig.savefig(filename, dpi=fig.dpi)
+        ax = plt.gca()
+        ax.tick_params(axis = 'both', which = 'major', labelsize = 4)
+        ax.tick_params(axis = 'both', which = 'minor', labelsize = 4)
+        filename = self.pathResults+ "\\" +frame['Parameter'][0] + '_WSEResults.png'
+        fig.savefig(filename, dpi=400)
 
         fig = plt.figure()
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['V (m/s)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=len(dfList))
+        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
-        plt.suptitle('Resultados da perturbação', fontsize=16)
-        plt.xlabel("River Length(m) ->", weight = 'bold')
-        plt.ylabel("V (m/s)", weight = 'bold')
+        plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
+        plt.xlabel("River Length(m) →", fontsize=5)
+        plt.ylabel("V (m/s)", fontsize=5)
         plt.gca().invert_xaxis()
-        plt.show()
-        filename = frame['Parameter'][0] + '_VResults.png'
-        fig.savefig(filename, dpi=fig.dpi)
+        ax = plt.gca()
+        ax.tick_params(axis = 'both', which = 'major', labelsize = 4)
+        ax.tick_params(axis = 'both', which = 'minor', labelsize = 4)
+        filename = self.pathResults+ "\\" +frame['Parameter'][0] + '_VResults.png'
+        
+        fig.savefig(filename, dpi=400)
 
+    def generateCSV(self, path, list_of_dfs):
+        filenameExcel = path + "\\" + list_of_dfs[0]['Parameter'][0] + '.xlsx'
+
+        writer = pd.ExcelWriter(filenameExcel, engine='xlsxwriter')
+        stdQ = []
+        meanQ = []
+        coefQ = []
+        stdV = []
+        meanV = []
+        coefV = []
+        stdWSE = []
+        meanWSE = []
+        for x in range(0, len(list_of_dfs)):
+            sheetName = list_of_dfs[x]['Iteration'][0]
+            stdQ.append(list_of_dfs[x]['Flow(m3/s)'].std())
+            meanQ.append(list_of_dfs[x]['Flow(m3/s)'].mean())
+            coefQ.append(stdQ[0]/meanQ[0])
+            stdV.append(list_of_dfs[x]['V (m/s)'].std())
+            meanV.append(list_of_dfs[x]['V (m/s)'].mean())
+            coefV.append(stdV[0]/meanV[0])
+            stdWSE.append(list_of_dfs[x]['WSE(m)'].std())
+            meanWSE.append(list_of_dfs[x]['WSE(m)'].mean())
+
+            size = len(list_of_dfs[x]['Iteration'])-1
+
+            [stdQ.append("") for y in range(0, size)]
+            [meanQ.append("") for y in range(0, size)]
+            [coefQ.append("") for y in range(0, size)]
+            [stdV.append("") for y in range(0, size)]
+            [meanV.append("") for y in range(0, size)]
+            [coefV.append("") for y in range(0, size)]
+            [stdWSE.append("") for y in range(0, size)]
+            [meanWSE.append("") for y in range(0, size)]
+
+            list_of_dfs[x]['Desvio Padrão Vazão (m³/s)'] = stdQ
+            list_of_dfs[x]['Média Vazão (m³/s)'] = meanQ
+            list_of_dfs[x]['Coeficiente de Variação da Vazão (%)'] = coefQ
+            list_of_dfs[x]['Desvio Padrão Velocidade (m/s)'] = stdV
+            list_of_dfs[x]['Média Velocidade (m/s)'] = meanV
+            list_of_dfs[x]['Coeficiente de Variação da Velocidade (%)'] = coefV
+            list_of_dfs[x]['Desvio Padrão WSE (m)'] = stdWSE
+            list_of_dfs[x]['Média WSE (m)'] = meanWSE
+
+            stdQ = []
+            meanQ = []
+            coefQ = []
+            stdV = []
+            meanV = []
+            coefV = []
+            stdWSE = []
+            meanWSE = []
+
+            list_of_dfs[x].to_excel(writer, sheet_name=sheetName, index=False)
+        writer.save()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

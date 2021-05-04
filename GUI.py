@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIqyjqgj.ui'
+## Form generated from reading UI file 'GUIpPFuuU.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -125,7 +125,7 @@ class Ui_MainWindow(object):
         self.label_6.setAlignment(Qt.AlignCenter)
         self.label_7 = QLabel(self.centralwidget)
         self.label_7.setObjectName(u"label_7")
-        self.label_7.setGeometry(QRect(410, 710, 221, 16))
+        self.label_7.setGeometry(QRect(410, 720, 221, 16))
         self.pushButton_2 = QPushButton(self.centralwidget)
         self.pushButton_2.setObjectName(u"pushButton_2")
         self.pushButton_2.setGeometry(QRect(480, 550, 75, 23))
@@ -392,6 +392,11 @@ class Ui_MainWindow(object):
         self.doubleSpinBox.setObjectName(u"doubleSpinBox")
         self.doubleSpinBox.setGeometry(QRect(860, 470, 62, 22))
         self.doubleSpinBox.setMaximum(1000.000000000000000)
+        self.label_17 = QLabel(self.centralwidget)
+        self.label_17.setObjectName(u"label_17")
+        self.label_17.setGeometry(QRect(-4, 700, 1031, 20))
+        self.label_17.setAlignment(Qt.AlignCenter)
+        self.label_17.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -436,5 +441,6 @@ class Ui_MainWindow(object):
         self.label_14.setText(QCoreApplication.translate("MainWindow", u"Limite m\u00ednimo (%)", None))
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"Varia\u00e7\u00e3o do n\u00edvel  por rodada (m)", None))
         self.label_16.setText(QCoreApplication.translate("MainWindow", u"OBS: ser\u00e1 realizado esse n\u00fam. de simula\u00e7\u00f5es acima e abaixo do valor atual. Ex: 1 =valor atual-varia\u00e7\u00e3o, valor atual, valor atual+varia\u00e7\u00e3o", None))
+        self.label_17.setText("")
     # retranslateUi
 
