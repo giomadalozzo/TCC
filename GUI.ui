@@ -257,7 +257,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>LEMBRE-SE: essa opção irá afetar o tempo de processamento do programa.</string>
+     <string>LEMBRE-SE: a quantidade de iterações irá afetar o tempo de processamento do programa.</string>
     </property>
     <property name="textFormat">
      <enum>Qt::MarkdownText</enum>
@@ -360,19 +360,6 @@
     </property>
     <property name="text">
      <string>Desenvolvido por Giovanni Madalozzo Oliveira</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_2">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>550</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Ajuda</string>
     </property>
    </widget>
    <widget class="QTreeView" name="treeView">

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIpPFuuU.ui'
+## Form generated from reading UI file 'GUIIwWnBz.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -126,9 +126,6 @@ class Ui_MainWindow(object):
         self.label_7 = QLabel(self.centralwidget)
         self.label_7.setObjectName(u"label_7")
         self.label_7.setGeometry(QRect(410, 720, 221, 16))
-        self.pushButton_2 = QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-        self.pushButton_2.setGeometry(QRect(480, 550, 75, 23))
         self.treeView = QTreeView(self.centralwidget)
         self.treeView.setObjectName(u"treeView")
         self.treeView.setGeometry(QRect(90, 160, 561, 91))
@@ -412,7 +409,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"An\u00e1lise de incerteza do HEC-RAS", None))
         self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Coeficiente de Manning", None))
         self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Vaz\u00f5es de entrada", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Selecione os par\u00e2metros que deseja analisar via Monte Carlo", None))
@@ -420,12 +417,11 @@ class Ui_MainWindow(object):
         self.checkBox_3.setText(QCoreApplication.translate("MainWindow", u"Condi\u00e7\u00e3o de contorno a jusante \"Known W.S.\"", None))
         self.checkBox_4.setText(QCoreApplication.translate("MainWindow", u"Condi\u00e7\u00e3o de contorno a jusante \"Normal depth\"", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Selecione o n\u00famero de simula\u00e7\u00f5es por an\u00e1lise que deseja realizar", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"LEMBRE-SE: essa op\u00e7\u00e3o ir\u00e1 afetar o tempo de processamento do programa.", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"LEMBRE-SE: a quantidade de itera\u00e7\u00f5es ir\u00e1 afetar o tempo de processamento do programa.", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Executar a an\u00e1lise!", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"O HEC-RAS DEVE  ESTAR FECHADO!", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"An\u00e1lise de incerteza do HEC-RAS", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Desenvolvido por Giovanni Madalozzo Oliveira", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Ajuda", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Selecione a vers\u00e3o do seu HEC-RAS", None))
         self.radioButton.setText(QCoreApplication.translate("MainWindow", u"5.0.1", None))
         self.radioButton_2.setText(QCoreApplication.translate("MainWindow", u"5.0.3", None))
