@@ -1007,9 +1007,9 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         for frame in dfList:
             print(frame)
             subtitle = frame['Iteration'][0]
-            plt.scatter(frame['Center Length(m)'], frame['Flow(m3/s)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
-          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
+            plt.scatter(frame['Center Length(m)'], frame['Flow(m3/s)'], label=subtitle, s=1, marker='.')
+        lgnd = plt.legend(loc="upper center", bbox_to_anchor=(0.5, 1.05),
+          fancybox=True, shadow=True, ncol=int(len(dfList)/3), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
         plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
@@ -1026,8 +1026,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['WSE(m)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
-          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
+        lgnd = plt.legend(loc="upper center", bbox_to_anchor=(0.5, 1.05),
+          fancybox=True, shadow=True, ncol=int(len(dfList)/3), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
         plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
@@ -1044,8 +1044,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['V (m/s)'], label=subtitle, s=1)
-        lgnd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
-          fancybox=True, shadow=True, ncol=len(dfList), fontsize=4)
+        lgnd = plt.legend(loc="upper center", bbox_to_anchor=(0.5, 1.05),
+          fancybox=True, shadow=True, ncol=int(len(dfList)/3), fontsize=4)
         for x in range(0, len(dfList)):
             lgnd.legendHandles[x]._sizes = [10]
         plt.suptitle('Resultados da perturbação', fontsize=8, weight = 'bold')
