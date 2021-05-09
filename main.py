@@ -1003,7 +1003,12 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.generateCSV(self.pathResults, dfList)
 
+
         fig = plt.figure()
+        cm = plt.get_cmap('tab20')
+        ax = fig.add_subplot(111)
+        NUM_COLORS = len(dfList)
+        ax.set_prop_cycle('color', [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
         for frame in dfList:
             print(frame)
             subtitle = frame['Iteration'][0]
@@ -1023,6 +1028,10 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         fig.savefig(filename, dpi=400)
 
         fig = plt.figure()
+        cm = plt.get_cmap('tab20')
+        ax = fig.add_subplot(111)
+        NUM_COLORS = len(dfList)
+        ax.set_prop_cycle('color', [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['WSE(m)'], label=subtitle, s=1)
@@ -1041,6 +1050,10 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         fig.savefig(filename, dpi=400)
 
         fig = plt.figure()
+        cm = plt.get_cmap('tab20')
+        ax = fig.add_subplot(111)
+        NUM_COLORS = len(dfList)
+        ax.set_prop_cycle('color', [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
         for frame in dfList:
             subtitle = frame['Iteration'][0]
             plt.scatter(frame['Center Length(m)'], frame['V (m/s)'], label=subtitle, s=1)
