@@ -335,6 +335,8 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
         for z in range (0, iterations):
             self.changeStages(z)
+            self.project.RC.Project_Close()
+            self.project.RC.Project_Open(self.prj_path)
             self.project.RC.Compute_CurrentPlan(None,None,True)
             df = self.extractResults(parameterInfo[z], "Water Stage")
             self.project.dfResultsStages.append(df)
@@ -946,14 +948,14 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             for y in range (0,len(self.project.modifiedStages[x])):
                 stage = str(self.project.modifiedStages[x][y][z])
                 if len(stage)<7:
-                    for i in range(0, 8-len(stage)):
+                    for i in range(0, 7-len(stage)):
                         stage+="0"
                 if len(stage)>7:
                     value = stage.split(".")[0]
-                    gap =  8-len(value)
+                    gap =  7-len(value)
                     stage = round(float(stage),gap-1)
                     stage = str(stage)
-                    while len(stage) < 8:
+                    while len(stage) < 7:
                         stage += "0"
                 
                 stagesString += " "+stage
