@@ -7,3 +7,5 @@ Software desenvolvido em Python 3.8.2 com o objetivo de analisar as incertezas g
 - Hidrograma de entrada
 - Condição de contorno a jusante Known W.S.
 - Condição de contorno a jusante Normal Depth
+
+Para executar o software, basta rodar o arquivo main.py
