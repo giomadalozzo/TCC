@@ -78,9 +78,9 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.treeView.clicked.connect(self.openFile)
         
     def openFile(self):
-        #index = self.treeView.currentIndex()
-        #self.prj_path = self.model.filePath(index)
-        self.prj_path = "C:\\Users\\Giovanni\\Desktop\\Projetos GitHub\\TCC\\Arquivos HECRAS\\ItajaiProjeto.prj"
+        index = self.treeView.currentIndex()
+        self.prj_path = self.model.filePath(index)
+        #self.prj_path = "C:\\Users\\Giovanni\\Desktop\\Projetos GitHub\\TCC\\Arquivos HECRAS\\ItajaiProjeto.prj"
 
     def checkVersion(self):
         if self.radioButton.isChecked():
@@ -334,6 +334,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 parameterInfo.append(string)
 
         for z in range (0, iterations):
+            print(z)
             self.changeStages(z)
             self.project.RC.Project_Close()
             self.project.RC.Project_Open(self.prj_path)
@@ -1076,6 +1077,7 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def generateCSV(self, path, list_of_dfs):
         filenameExcel = path + "\\" + list_of_dfs[0]['Parameter'][0] + '.xlsx'
+        filenameExcel2 = path + "\\" + list_of_dfs[0]['Parameter'][0] + '_AllInOne.xlsx'
 
         writer = pd.ExcelWriter(filenameExcel, engine='xlsxwriter')
         stdQ = []
@@ -1086,16 +1088,33 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
         coefV = []
         stdWSE = []
         meanWSE = []
+        final_stdQ = []
+        final_meanQ = []
+        final_coefQ = []
+        final_stdV = []
+        final_meanV = []
+        final_coefV = []
+        final_stdWSE = []
+        final_meanWSE = []
         for x in range(0, len(list_of_dfs)):
             sheetName = list_of_dfs[x]['Iteration'][0]
             stdQ.append(list_of_dfs[x]['Flow(m3/s)'].std())
             meanQ.append(list_of_dfs[x]['Flow(m3/s)'].mean())
-            coefQ.append(stdQ[0]/meanQ[0])
+            coefQ.append((stdQ[0]/meanQ[0])*100)
             stdV.append(list_of_dfs[x]['V (m/s)'].std())
             meanV.append(list_of_dfs[x]['V (m/s)'].mean())
-            coefV.append(stdV[0]/meanV[0])
+            coefV.append((stdV[0]/meanV[0])*100)
             stdWSE.append(list_of_dfs[x]['WSE(m)'].std())
             meanWSE.append(list_of_dfs[x]['WSE(m)'].mean())
+
+            final_stdQ.append(list_of_dfs[x]['Flow(m3/s)'].std())
+            final_meanQ.append(list_of_dfs[x]['Flow(m3/s)'].mean())
+            final_coefQ.append((stdQ[0]/meanQ[0])*100)
+            final_stdV.append(list_of_dfs[x]['V (m/s)'].std())
+            final_meanV.append(list_of_dfs[x]['V (m/s)'].mean())
+            final_coefV.append((stdV[0]/meanV[0])*100)
+            final_stdWSE.append(list_of_dfs[x]['WSE(m)'].std())
+            final_meanWSE.append(list_of_dfs[x]['WSE(m)'].mean())
 
             size = len(list_of_dfs[x]['Iteration'])-1
 
@@ -1127,6 +1146,13 @@ class Interface(GUI.Ui_MainWindow, QtWidgets.QMainWindow):
             meanWSE = []
 
             list_of_dfs[x].to_excel(writer, sheet_name=sheetName, index=False)
+        writer.save()
+
+        writer = pd.ExcelWriter(filenameExcel2, engine='xlsxwriter')
+        df = pd.DataFrame(list(zip(final_stdQ, final_meanQ, final_coefQ, final_stdV, final_meanV, final_coefV, final_stdWSE, final_meanWSE)),columns =['Desvio Padrão Vazão (m³/s)','Média Vazão (m³/s)', 
+        'Coeficiente de Variação da Vazão (%)', 'Desvio Padrão Velocidade (m/s)', 'Média Velocidade (m/s)', 'Coeficiente de Variação da Velocidade (%)', 'Desvio Padrão WSE (m)', 'Média WSE (m)'])
+
+        df.to_excel(writer, sheet_name="All info", index=False)
         writer.save()
 
 if __name__ == "__main__":

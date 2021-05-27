@@ -118,7 +118,7 @@ class Ui_MainWindow(object):
         self.label_6.setObjectName(u"label_6")
         self.label_6.setGeometry(QRect(0, 20, 1031, 81))
         font1 = QFont()
-        font1.setPointSize(36)
+        font1.setPointSize(28)
         font1.setBold(True)
         font1.setWeight(75)
         self.label_6.setFont(font1)
@@ -409,7 +409,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"An\u00e1lise de incerteza do HEC-RAS", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"UAS-RAS", None))
         self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Coeficiente de Manning", None))
         self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Vaz\u00f5es de entrada", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Selecione os par\u00e2metros que deseja analisar via Monte Carlo", None))
@@ -420,7 +420,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"LEMBRE-SE: a quantidade de itera\u00e7\u00f5es ir\u00e1 afetar o tempo de processamento do programa.", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Executar a an\u00e1lise!", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"O HEC-RAS DEVE  ESTAR FECHADO!", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"An\u00e1lise de incerteza do HEC-RAS", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"UAS-RAS: An\u00e1lise de incerteza do HEC-RAS", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Desenvolvido por Giovanni Madalozzo Oliveira", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Selecione a vers\u00e3o do seu HEC-RAS", None))
         self.radioButton.setText(QCoreApplication.translate("MainWindow", u"5.0.1", None))
